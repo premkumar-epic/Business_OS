@@ -7,6 +7,7 @@ import CustomerManager from './components/CustomerManager';
 import ProductCatalog from './components/ProductCatalog';
 import CompanyProfileModal from './components/CompanyProfileModal';
 import AuthLockScreen from './components/AuthLockScreen';
+import PaymentLogs from './components/PaymentLogs';
 import { api } from './utils/api';
 
 import { 
@@ -479,6 +480,13 @@ export default function App() {
             onAddProduct={handleAddProduct}
             onUpdateProduct={handleUpdateProduct}
             onDeleteProduct={handleDeleteProduct}
+          />
+        )}
+        
+        {activeTab === 'payments' && (
+          <PaymentLogs 
+            invoices={invoices}
+            customers={customers}
           />
         )}
 

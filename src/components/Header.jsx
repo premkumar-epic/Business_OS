@@ -95,6 +95,14 @@ export default function Header({
           </button>
 
           <button 
+            className={`tab-btn ${activeTab === 'payments' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('payments'); setIsNavMenuOpen(false); }}
+          >
+            <Database size={15} />
+            <span>Payment Logs</span>
+          </button>
+
+          <button 
             className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`}
             onClick={() => { setActiveTab('products'); setIsNavMenuOpen(false); }}
           >
