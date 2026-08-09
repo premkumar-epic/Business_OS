@@ -281,8 +281,35 @@ export default function App() {
 
   const handleUpdateCustomer = async (updatedCust) => {
     try {
+      const oldCust = customers.find(c => c.id === updatedCust.id);
+      const oldName = oldCust ? oldCust.name : '';
+
       await api.updateCustomer(updatedCust.id, updatedCust);
       setCustomers(prev => prev.map(c => c?.id === updatedCust.id ? updatedCust : c));
+
+      // Cascade name update to invoices if the name changed
+      if (oldName && oldName !== updatedCust.name) {
+        const normOld = String(oldName).trim().toLowerCase();
+        const updatedInvoices = invoices.filter(inv => {
+          const invName = (inv && inv.customer && inv.customer.name) ? String(inv.customer.name).trim().toLowerCase() : '';
+          return invName === normOld;
+        }).map(inv => ({
+          ...inv,
+          customerName: updatedCust.name,
+          customer: {
+            ...inv.customer,
+            name: updatedCust.name
+          }
+        }));
+
+        if (updatedInvoices.length > 0) {
+          await Promise.all(updatedInvoices.map(inv => api.saveInvoice(inv)));
+          setInvoices(prev => prev.map(inv => {
+            const updated = updatedInvoices.find(u => u.id === inv.id);
+            return updated ? updated : inv;
+          }));
+        }
+      }
     } catch (err) {
       alert("Failed to update customer: " + err.message);
     }
