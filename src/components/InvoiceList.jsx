@@ -30,6 +30,24 @@ export default function InvoiceList({
   const [downloadingId, setDownloadingId] = useState(null);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
 
+  const getCustomerColorBadge = (customerName) => {
+    if (!customerName) return { bg: 'rgba(148, 163, 184, 0.08)', border: 'rgba(148, 163, 184, 0.25)', text: '#64748b' };
+    let hash = 0;
+    for (let i = 0; i < customerName.length; i++) {
+      hash = customerName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = [
+      { bg: 'rgba(99, 102, 241, 0.08)', border: 'rgba(99, 102, 241, 0.25)', text: '#6366f1' }, // Indigo
+      { bg: 'rgba(59, 130, 246, 0.08)', border: 'rgba(59, 130, 246, 0.25)', text: '#3b82f6' }, // Blue
+      { bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.25)', text: '#10b981' }, // Emerald
+      { bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.25)', text: '#f59e0b' }, // Amber
+      { bg: 'rgba(236, 72, 153, 0.08)', border: 'rgba(236, 72, 153, 0.25)', text: '#ec4899' }, // Pink
+      { bg: 'rgba(14, 165, 233, 0.08)', border: 'rgba(14, 165, 233, 0.25)', text: '#0ea5e9' }  // Sky
+    ];
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
+
   const formatFullDate = (dateStr) => {
     if (!dateStr) return '';
     if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
@@ -56,6 +74,8 @@ export default function InvoiceList({
   };
 
   const filteredInvoices = invoices.filter(inv => {
+    if (inv.invoiceNo === 'SHIPMENTS_LEDGER') return false;
+
     const matchesSearch = 
       inv.invoiceNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inv.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,11 +219,29 @@ export default function InvoiceList({
                       <span className="mobile-only-inline">{formatMobileDate(inv.date)}</span>
                     </td>
                     <td data-label="Client / Customer" data-mobile-hide="client">
-                      <div>
-                        <strong>{inv.customer?.name}</strong>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                          {inv.customer?.gstin ? `GST: ${inv.customer.gstin}` : 'No GST'}
-                        </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                        {(() => {
+                          const badge = getCustomerColorBadge(inv.customer?.name);
+                          return (
+                            <span style={{ 
+                              display: 'inline-block',
+                              padding: '0.2rem 0.55rem', 
+                              background: badge.bg, 
+                              border: `1px solid ${badge.border}`, 
+                              color: badge.text, 
+                              borderRadius: '4px',
+                              fontWeight: '600',
+                              fontSize: '0.8rem'
+                            }}>
+                              {inv.customer?.name}
+                            </span>
+                          );
+                        })()}
+                        {inv.customer?.gstin && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            GST: {inv.customer.gstin}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td data-label="Ref DC No." data-mobile-hide="dc">{inv.referenceDC || '-'}</td>

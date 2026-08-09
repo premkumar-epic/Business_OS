@@ -18,51 +18,66 @@ import {
   Edit3,
   MoreVertical,
   Copy,
-  Trash2
+  Trash2,
+  Database,
+  Upload,
+  X
 } from 'lucide-react';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 import InvoicePaper from './InvoicePaper';
+import { parseIVKExcel } from '../utils/excelImporter';
 
 export default function Dashboard({ 
   invoices = [], 
   customers = [], 
   products = [], 
   company = {}, 
+  shipments = [],
   setActiveTab, 
   onNewInvoice, 
-  onEditInvoice 
+  onEditInvoice,
+  onImportExcelData
 }) {
   const [activePreviewInvoice, setActivePreviewInvoice] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
   const [activeDropdownId, setActiveDropdownId] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importSummary, setImportSummary] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [excelFile, setExcelFile] = useState(null);
 
   // Safe list filters
-  const safeInvoices = Array.isArray(invoices) ? invoices.filter(Boolean) : [];
+  const safeInvoices = (Array.isArray(invoices) ? invoices.filter(Boolean) : [])
+    .filter(inv => inv?.invoiceNo !== 'SHIPMENTS_LEDGER');
   const safeCustomers = Array.isArray(customers) ? customers.filter(Boolean) : [];
   const safeProducts = Array.isArray(products) ? products.filter(Boolean) : [];
   const safeCompany = company || {};
 
   // Financial Calculations
-  const totalInvoiced = safeInvoices.reduce((sum, inv) => sum + Number(inv?.totalAmount || 0), 0);
-  
-  const totalPending = safeInvoices.reduce((sum, inv) => {
-    if (inv?.status === 'Pending') {
-      return sum + Number(inv.totalAmount || 0);
-    } else if (inv?.status === 'Partially Paid') {
-      const paid = Number(inv.paidAmount || 0);
-      return sum + Math.max(0, Number(inv.totalAmount || 0) - paid);
-    }
-    return sum;
-  }, 0);
+  const getInvoiceTotal = (inv) => {
+    return inv?.useCustomTotalAmount && Number(inv?.customTotalAmount) >= 0 
+      ? Number(inv.customTotalAmount) 
+      : (Number(inv?.totalAmount) || 0);
+  };
 
-  const totalCollected = safeInvoices.reduce((sum, inv) => {
-    if (inv?.status === 'Paid') {
-      return sum + Number(inv.totalAmount || 0);
-    } else if (inv?.status === 'Partially Paid') {
-      return sum + Number(inv.paidAmount || 0);
-    }
-    return sum;
-  }, 0);
+  const globalFinancials = safeInvoices
+    .filter(inv => inv.status !== 'Draft')
+    .reduce((acc, inv) => {
+      const total = getInvoiceTotal(inv);
+      const netBilled = Math.max(0, total - Number(inv.oldBalance || 0));
+      const paid = inv.status === 'Paid' ? total : Number(inv.paidAmount || 0);
+      
+      return {
+        invoiced: acc.invoiced + netBilled,
+        collected: acc.collected + paid
+      };
+    }, { invoiced: 0, collected: 0 });
+
+  const totalCustomerOldBalances = safeCustomers.reduce((sum, c) => sum + (Number(c.oldBalance) || 0), 0);
+
+  const totalInvoiced = globalFinancials.invoiced;
+  const totalCollected = globalFinancials.collected;
+  const totalPending = totalInvoiced + totalCustomerOldBalances - totalCollected;
 
   const paidCount = safeInvoices.filter(inv => inv?.status === 'Paid').length;
   const partialCount = safeInvoices.filter(inv => inv?.status === 'Partially Paid').length;
@@ -81,14 +96,16 @@ export default function Dashboard({
       const pastUnpaid = safeInvoices
         .filter(inv => {
           const invCustName = (inv && inv.customer && inv.customer.name) ? String(inv.customer.name).trim().toLowerCase() : '';
-          return invCustName === custName;
+          return invCustName === custName && inv.status !== 'Draft';
         })
         .reduce((sum, inv) => {
-          if (inv?.status === 'Pending') return sum + Number(inv.totalAmount || 0);
-          if (inv?.status === 'Partially Paid') return sum + Math.max(0, Number(inv.totalAmount || 0) - Number(inv.paidAmount || 0));
-          return sum;
+          const total = getInvoiceTotal(inv);
+          const netBilled = Math.max(0, total - Number(inv.oldBalance || 0));
+          const paid = inv.status === 'Paid' ? total : Number(inv.paidAmount || 0);
+          return sum + (netBilled - paid);
         }, 0);
 
+      // Customer oldBalance + un-paid invoices
       return {
         ...c,
         totalOutstanding: (Number(c?.oldBalance) || 0) + pastUnpaid
@@ -140,7 +157,15 @@ export default function Dashboard({
             Here is your live business overview for <strong>{safeCompany.name || 'IVK Garments'}</strong> (Singasandra, Bengaluru)
           </p>
         </div>
-
+        <div>
+          <button className="btn btn-secondary" onClick={() => {
+            setExcelFile(null);
+            setImportSummary(null);
+            setIsImportModalOpen(true);
+          }}>
+            <Database size={16} /> Import Excel Data
+          </button>
+        </div>
       </div>
 
       {/* Key Metric Stats Cards */}
@@ -461,26 +486,121 @@ export default function Dashboard({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.825rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                <span><strong>LUXEMBOURG Garment</strong></span>
-                <span style={{ color: '#10b981', fontWeight: 'bold' }}>1,782 Pcs Dispatched</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                <span><strong>Officer Kids Wear</strong></span>
-                <span style={{ color: '#10b981', fontWeight: 'bold' }}>1,730 Pcs Dispatched</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>
-                <span><strong>JEEP Casual Shirts</strong></span>
-                <span style={{ color: '#10b981', fontWeight: 'bold' }}>726 Pcs Dispatched</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span><strong>Redoak Casual Wear</strong></span>
-                <span style={{ color: '#10b981', fontWeight: 'bold' }}>898 Pcs Dispatched</span>
-              </div>
+              {shipments.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1rem 0' }}>
+                  No shipments logged yet.
+                </div>
+              ) : (
+                [...shipments]
+                  .sort((a, b) => new Date(b.dispatchDate).getTime() - new Date(a.dispatchDate).getTime())
+                  .slice(0, 4)
+                  .map((ship, idx, arr) => {
+                    const cust = safeCustomers.find(c => c.id === ship.customerId);
+                    return (
+                      <div key={ship.id} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: idx < arr.length - 1 ? '0.5rem' : '0', borderBottom: idx < arr.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                        <span><strong>{cust?.name || 'Client'}: {ship.brand}</strong></span>
+                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>{ship.numberOfPieces.toLocaleString('en-IN')} Pcs</span>
+                      </div>
+                    );
+                  })
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {isImportModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <div className="card-header" style={{ marginBottom: '1.25rem' }}>
+              <div className="card-title">
+                <Upload className="text-indigo-400" size={22} />
+                Import Excel Business Data
+              </div>
+              <button className="btn btn-secondary btn-icon" onClick={() => setIsImportModalOpen(false)} disabled={importing}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {!importSummary ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-md)', padding: '2rem 1.5rem', textAlign: 'center', background: 'var(--bg-secondary)' }}>
+                  <Database size={40} color="#6366f1" style={{ marginBottom: '1rem' }} />
+                  <p style={{ fontWeight: '500', marginBottom: '0.25rem' }}>Upload "IVK Garments+Form.xlsx" sheet</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Maps all sub-brands/customers directly to parent customer "Afroasia Exports"</p>
+                  <input 
+                    type="file" 
+                    id="excel-file-uploader" 
+                    accept=".xlsx, .xls"
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      setImporting(true);
+                      try {
+                        const parsed = await parseIVKExcel(file, safeCustomers);
+                        setExcelFile(file);
+                        setImportSummary(parsed);
+                      } catch (err) {
+                        alert("Error parsing Excel: " + err.message);
+                      } finally {
+                        setImporting(false);
+                      }
+                    }}
+                  />
+                  <label htmlFor="excel-file-uploader" className="btn btn-primary" style={{ cursor: 'pointer' }}>
+                    Select Excel File
+                  </label>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ padding: '0.75rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 'var(--radius-md)', fontSize: '0.85rem' }}>
+                    <strong>Selected File:</strong> {excelFile?.name}
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                      <span>Customer mapping:</span>
+                      <strong>{importSummary.afroasiaCustomer ? 'New "Afroasia Exports" + Existing Clients' : 'Map to existing Clients'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                      <span>Invoices found:</span>
+                      <strong>{importSummary.invoices.length}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                      <span>Payments found:</span>
+                      <strong>{importSummary.payments.length}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                      <span>Shipments found:</span>
+                      <strong>{importSummary.shipments.length}</strong>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+                    <button className="btn btn-secondary" onClick={() => setImportSummary(null)} disabled={importing}>
+                      Back
+                    </button>
+                    <button className="btn btn-primary" disabled={importing} onClick={async () => {
+                      setImporting(true);
+                      try {
+                        await onImportExcelData(importSummary);
+                        setIsImportModalOpen(false);
+                      } catch (err) {
+                        alert("Import failed: " + err.message);
+                      } finally {
+                        setImporting(false);
+                      }
+                    }}>
+                      {importing ? 'Importing...' : 'Confirm Import'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

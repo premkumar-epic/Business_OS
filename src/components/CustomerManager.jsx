@@ -1,34 +1,39 @@
 import React, { useState } from 'react';
 import { Users, Plus, Edit2, Trash2, MapPin, Phone, Building, Save, X, Banknote } from 'lucide-react';
 
-export default function CustomerManager({ customers, invoices = [], onAddCustomer, onUpdateCustomer, onDeleteCustomer, onRecordPayment }) {
+export default function CustomerManager({ customers, invoices = [], shipments = [], onAddCustomer, onUpdateCustomer, onDeleteCustomer, onRecordPayment }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [paymentModalData, setPaymentModalData] = useState(null);
+  const [balanceType, setBalanceType] = useState('debit');
+
+  const getSubBrandsForCustomer = (cust) => {
+    if (!cust) return [];
+    const custShipments = shipments.filter(s => s.customerId === cust.id);
+    return [...new Set(custShipments.map(s => s.brand).filter(Boolean))];
+  };
 
   const calculateTotalOutstanding = (cust) => {
     if (!cust) return 0;
-    let totalNetBilled = 0;
-    let totalPaid = 0;
     const norm = String(cust.name).trim().toLowerCase();
     
-    invoices.forEach(inv => {
-      const invName = (inv && inv.customer && inv.customer.name) ? String(inv.customer.name).trim().toLowerCase() : '';
-      if (invName === norm && inv.status !== 'Draft') {
-        // True net amount of this invoice (excluding carried balance)
-        const netInvoiceAmount = Math.max(0, Number(inv.totalAmount || 0) - Number(inv.oldBalance || 0));
-        totalNetBilled += netInvoiceAmount;
+    const pastUnpaid = invoices
+      .filter(inv => {
+        const invName = (inv && inv.customer && inv.customer.name) ? String(inv.customer.name).trim().toLowerCase() : '';
+        return invName === norm && inv.status !== 'Draft';
+      })
+      .reduce((sum, inv) => {
+        const total = inv.useCustomTotalAmount && Number(inv.customTotalAmount) >= 0 
+          ? Number(inv.customTotalAmount) 
+          : (Number(inv.totalAmount) || 0);
 
-        if (inv.status === 'Paid') {
-          totalPaid += Number(inv.totalAmount || 0);
-        } else if (inv.status === 'Partially Paid') {
-          totalPaid += Number(inv.paidAmount || 0);
-        }
-      }
-    });
+        const netBilled = Math.max(0, total - Number(inv.oldBalance || 0));
+        const paid = inv.status === 'Paid' ? total : Number(inv.paidAmount || 0);
+        
+        return sum + (netBilled - paid);
+      }, 0);
 
-    const baseOld = Number(cust.oldBalance || 0);
-    return baseOld + totalNetBilled - totalPaid;
+    return Number(cust.oldBalance || 0) + pastUnpaid;
   };
   const [formData, setFormData] = useState({
     name: '',
@@ -57,21 +62,28 @@ export default function CustomerManager({ customers, invoices = [], onAddCustome
       gstin: '',
       oldBalance: 0
     });
+    setBalanceType('debit');
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (cust) => {
     setEditingCustomer(cust);
-    setFormData({ ...cust });
+    setFormData({ ...cust, oldBalance: Math.abs(cust.oldBalance || 0) });
+    setBalanceType(Number(cust.oldBalance || 0) >= 0 ? 'debit' : 'credit');
     setIsModalOpen(true);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const finalBalance = balanceType === 'credit'
+      ? -Math.abs(Number(formData.oldBalance || 0))
+      : Math.abs(Number(formData.oldBalance || 0));
+    const submissionData = { ...formData, oldBalance: finalBalance };
+    
     if (editingCustomer) {
-      onUpdateCustomer({ ...formData, id: editingCustomer.id });
+      onUpdateCustomer({ ...submissionData, id: editingCustomer.id });
     } else {
-      onAddCustomer({ ...formData, id: `cust-${Date.now()}` });
+      onAddCustomer({ ...submissionData, id: `cust-${Date.now()}` });
     }
     setIsModalOpen(false);
   };
@@ -137,15 +149,42 @@ export default function CustomerManager({ customers, invoices = [], onAddCustome
                   </div>
                 )}
                 {(() => {
-                  const totalOutstanding = calculateTotalOutstanding(c);
-                  if (totalOutstanding > 0) {
+                  const brands = getSubBrandsForCustomer(c);
+                  if (brands.length > 0) {
                     return (
-                      <div style={{ marginTop: '0.5rem', color: 'var(--accent-warning)', fontWeight: '600' }}>
-                        Current Outstanding Balance: ₹{totalOutstanding.toLocaleString('en-IN')}
+                      <div style={{ marginTop: '0.4rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
+                        <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sub-Brands:</strong>
+                        {brands.map(b => (
+                          <span key={b} className="badge badge-secondary" style={{ fontSize: '0.7rem', padding: '0.1rem 0.35rem' }}>
+                            {b}
+                          </span>
+                        ))}
                       </div>
                     );
                   }
                   return null;
+                })()}
+
+                {(() => {
+                  const totalOutstanding = calculateTotalOutstanding(c);
+                  if (totalOutstanding > 0) {
+                    return (
+                      <div style={{ marginTop: '0.5rem', color: '#2563eb', fontWeight: '600' }}>
+                        Current Outstanding Balance: ₹{totalOutstanding.toLocaleString('en-IN')}
+                      </div>
+                    );
+                  } else if (totalOutstanding < 0) {
+                    return (
+                      <div style={{ marginTop: '0.5rem', color: '#ef4444', fontWeight: '600' }}>
+                        Advance Credit Balance: ₹{Math.abs(totalOutstanding).toLocaleString('en-IN')}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                      No Outstanding Balance
+                    </div>
+                  );
                 })()}
               </div>
             </div>
@@ -265,14 +304,29 @@ export default function CustomerManager({ customers, invoices = [], onAddCustome
                     onChange={e => setFormData({ ...formData, pincode: e.target.value })} 
                   />
                 </div>
+              </div>
+
+              <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Opening Balance (₹)</label>
                   <input 
                     type="number" 
                     className="form-input" 
+                    placeholder="0"
                     value={formData.oldBalance} 
-                    onChange={e => setFormData({ ...formData, oldBalance: Number(e.target.value) })} 
+                    onChange={e => setFormData({ ...formData, oldBalance: e.target.value === '' ? '' : Number(e.target.value) })} 
                   />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Balance Type</label>
+                  <select 
+                    className="form-input"
+                    value={balanceType}
+                    onChange={e => setBalanceType(e.target.value)}
+                  >
+                    <option value="debit">Debit (Outstanding / Owed to us)</option>
+                    <option value="credit">Credit (Advance Credit / Owed to client)</option>
+                  </select>
                 </div>
               </div>
 

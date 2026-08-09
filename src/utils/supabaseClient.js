@@ -6,17 +6,27 @@ const getSupabaseConfig = () => {
   return { url, key };
 };
 
+let cachedSupabase = null;
+let lastUrl = null;
+let lastKey = null;
+
 export const getSupabaseClient = () => {
   const { url, key } = getSupabaseConfig();
-  if (url && key) {
-    try {
-      return createClient(url, key);
-    } catch (e) {
-      console.warn("Supabase init error:", e);
-      return null;
-    }
+  if (!url || !key) return null;
+
+  if (cachedSupabase && url === lastUrl && key === lastKey) {
+    return cachedSupabase;
   }
-  return null;
+
+  try {
+    cachedSupabase = createClient(url, key);
+    lastUrl = url;
+    lastKey = key;
+    return cachedSupabase;
+  } catch (e) {
+    console.warn("Supabase init error:", e);
+    return null;
+  }
 };
 
 // SQL Schema for user reference

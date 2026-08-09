@@ -8,7 +8,9 @@ import ProductCatalog from './components/ProductCatalog';
 import CompanyProfileModal from './components/CompanyProfileModal';
 import AuthLockScreen from './components/AuthLockScreen';
 import PaymentLogs from './components/PaymentLogs';
+import ShipmentLogs from './components/ShipmentLogs';
 import { api } from './utils/api';
+import { parseIVKExcel } from './utils/excelImporter';
 
 import { 
   defaultCompany, 
@@ -44,6 +46,7 @@ export default function App() {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [shipments, setShipments] = useState([]);
   
   // Loading & Error States
   const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +98,15 @@ export default function App() {
     
     loadData();
   }, [isUnlocked]);
+
+  useEffect(() => {
+    const ledger = invoices.find(inv => inv.invoiceNo === 'SHIPMENTS_LEDGER');
+    if (ledger && Array.isArray(ledger.items)) {
+      setShipments(ledger.items);
+    } else {
+      setShipments([]);
+    }
+  }, [invoices]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -227,8 +239,12 @@ export default function App() {
     for (const inv of custInvoices) {
       if (remainingPayment <= 0) break;
       
-      const netInvoiceAmount = Math.max(0, Number(inv.totalAmount || 0) - Number(inv.oldBalance || 0));
-      const currentPaid = Number(inv.paidAmount || 0);
+      const total = inv.useCustomTotalAmount && Number(inv.customTotalAmount) >= 0 
+        ? Number(inv.customTotalAmount) 
+        : (Number(inv.totalAmount) || 0);
+
+      const netInvoiceAmount = Math.max(0, total - Number(inv.oldBalance || 0));
+      const currentPaid = inv.status === 'Paid' ? total : Number(inv.paidAmount || 0);
       const invoiceRemainingDebt = Math.max(0, netInvoiceAmount - currentPaid);
       
       if (invoiceRemainingDebt <= 0) continue;
@@ -252,22 +268,169 @@ export default function App() {
       updatedInvoices.push(updatedInv);
     }
 
-    if (updatedInvoices.length > 0) {
-      try {
+    const targetCustomer = customers.find(c => String(c.name).trim().toLowerCase() === norm);
+
+    try {
+      if (updatedInvoices.length > 0) {
         await Promise.all(updatedInvoices.map(inv => api.saveInvoice(inv)));
-        
-        // Update local state for all modified invoices
         setInvoices(prev => prev.map(inv => {
           const updated = updatedInvoices.find(u => u.id === inv.id);
           return updated ? updated : inv;
         }));
-        
-        alert(`Successfully applied ₹${amount.toLocaleString('en-IN')} across ${updatedInvoices.length} invoices!`);
-      } catch (err) {
-        alert("Failed to save auto-allocated payments: " + err.message);
       }
-    } else {
-      alert("No pending invoices found for this customer to allocate the payment to.");
+
+      if (remainingPayment > 0 && targetCustomer) {
+        const updatedCust = {
+          ...targetCustomer,
+          oldBalance: Number(targetCustomer.oldBalance || 0) - remainingPayment
+        };
+        await api.updateCustomer(updatedCust.id, updatedCust);
+        setCustomers(prev => prev.map(c => c.id === updatedCust.id ? updatedCust : c));
+        
+        alert(`Successfully recorded payment! ₹${(amount - remainingPayment).toLocaleString('en-IN')} applied to invoices, and ₹${remainingPayment.toLocaleString('en-IN')} added as client advance credit balance.`);
+      } else if (updatedInvoices.length > 0) {
+        alert(`Successfully applied ₹${amount.toLocaleString('en-IN')} across ${updatedInvoices.length} invoices!`);
+      } else {
+        alert("No pending invoices found for this customer to allocate the payment to.");
+      }
+    } catch (err) {
+      alert("Error recording payment: " + err.message);
+    }
+  };
+
+  const handleImportExcelData = async (excelData) => {
+    try {
+      // 1. If Afroasia Exports customer needs to be created, create it
+      let targetCust = customers.find(c => c.name.trim().toLowerCase() === 'afroasia exports');
+      if (!targetCust && excelData.afroasiaCustomer) {
+        targetCust = {
+          ...excelData.afroasiaCustomer,
+          id: `cust-afroasia-${Date.now()}`
+        };
+        await api.addCustomer(targetCust);
+        setCustomers(prev => [...prev, targetCust]);
+      }
+      
+      // Update client reference to correct database resolved objects in invoices
+      const mappedInvoices = excelData.invoices.map(inv => {
+        let resolvedCust = customers.find(c => c.name.trim().toLowerCase() === inv.customer.name.trim().toLowerCase());
+        if (!resolvedCust && inv.customer.id === 'cust-afroasia') {
+          resolvedCust = targetCust;
+        }
+        return {
+          ...inv,
+          customer: resolvedCust || targetCust
+        };
+      });
+
+      // 2. Map shipments & update company profile
+      const updatedShipments = excelData.shipments.map(s => {
+        let resolvedCust = customers.find(c => c.id === s.customerId);
+        if (!resolvedCust && s.customerId === 'cust-afroasia') {
+          resolvedCust = targetCust;
+        }
+        return {
+          ...s,
+          customerId: resolvedCust?.id || targetCust?.id
+        };
+      });
+
+      const updatedCompany = {
+        ...company,
+        extendedData: {
+          ...(company.extendedData || {}),
+          shipments: [...updatedShipments, ...(company.extendedData?.shipments || [])]
+        }
+      };
+      await api.updateCompany(updatedCompany);
+      setCompany(updatedCompany);
+
+      // 3. Process Invoices and Payments in-memory grouped by customer
+      let pendingInvoicesList = [...mappedInvoices].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Process payments in-memory
+      for (const pay of excelData.payments) {
+        let remaining = pay.amount;
+        
+        const customerInvoices = pendingInvoicesList.filter(inv => 
+          inv.customer.name.trim().toLowerCase() === pay.customerName.trim().toLowerCase()
+        );
+
+        for (const inv of customerInvoices) {
+          if (remaining <= 0) break;
+          
+          const total = inv.useCustomTotalAmount && Number(inv.customTotalAmount) >= 0 
+            ? Number(inv.customTotalAmount) 
+            : (Number(inv.totalAmount) || 0);
+
+          const netInvoiceAmount = Math.max(0, total - Number(inv.oldBalance || 0));
+          const currentPaid = Number(inv.paidAmount || 0);
+          const remainingDebt = Math.max(0, netInvoiceAmount - currentPaid);
+          
+          if (remainingDebt <= 0) continue;
+
+          if (remaining >= remainingDebt) {
+            inv.paidAmount = currentPaid + remainingDebt;
+            inv.status = 'Paid';
+            inv.notes = `Auto-allocated ₹${remainingDebt.toLocaleString('en-IN')} from bulk payment on ${pay.dateStr}. ` + (inv.notes || '');
+            remaining -= remainingDebt;
+          } else {
+            inv.paidAmount = currentPaid + remaining;
+            inv.status = 'Partially Paid';
+            inv.notes = `Auto-allocated partial ₹${remaining.toLocaleString('en-IN')} from bulk payment on ${pay.dateStr}. ` + (inv.notes || '');
+            remaining = 0;
+          }
+        }
+      }
+
+      // Bulk write all invoices
+      for (const inv of pendingInvoicesList) {
+        await api.saveInvoice(inv);
+      }
+
+      // Add to state
+      setInvoices(prev => [...pendingInvoicesList, ...prev]);
+
+      alert(`Successfully imported:
+- ${updatedShipments.length} Shipment logs
+- ${pendingInvoicesList.length} Invoices
+- ${excelData.payments.length} Payments allocated!`);
+      
+    } catch (err) {
+      alert("Failed to import Excel data: " + err.message);
+    }
+  };
+
+  const handleUpdateShipments = async (newShipments) => {
+    let ledger = invoices.find(inv => inv.invoiceNo === 'SHIPMENTS_LEDGER');
+    if (!ledger) {
+      ledger = {
+        id: 'inv-shipments-ledger',
+        invoiceNo: 'SHIPMENTS_LEDGER',
+        status: 'Draft',
+        date: new Date().toISOString().split('T')[0],
+        dueDate: new Date().toISOString().split('T')[0],
+        totalAmount: 0,
+        customer: { name: 'System Ledger' },
+        items: []
+      };
+    }
+    const updatedLedger = {
+      ...ledger,
+      items: newShipments
+    };
+    try {
+      await api.saveInvoice(updatedLedger);
+      setInvoices(prev => {
+        const exists = prev.some(inv => inv.invoiceNo === 'SHIPMENTS_LEDGER');
+        if (exists) {
+          return prev.map(inv => inv.invoiceNo === 'SHIPMENTS_LEDGER' ? updatedLedger : inv);
+        }
+        return [updatedLedger, ...prev];
+      });
+      setShipments(newShipments);
+    } catch (err) {
+      alert("Failed to save shipments: " + err.message);
     }
   };
 
@@ -434,9 +597,11 @@ export default function App() {
             customers={customers}
             products={products}
             company={company}
+            shipments={shipments}
             setActiveTab={setActiveTab}
             onNewInvoice={handleNewInvoice}
             onEditInvoice={handleEditInvoice}
+            onImportExcelData={handleImportExcelData}
           />
         )}
 
@@ -467,6 +632,7 @@ export default function App() {
           <CustomerManager 
             customers={customers}
             invoices={invoices}
+            shipments={shipments}
             onAddCustomer={handleAddCustomer}
             onUpdateCustomer={handleUpdateCustomer}
             onDeleteCustomer={handleDeleteCustomer}
@@ -487,6 +653,15 @@ export default function App() {
           <PaymentLogs 
             invoices={invoices}
             customers={customers}
+            onRecordPayment={handleRecordPayment}
+          />
+        )}
+        
+        {activeTab === 'shipments' && (
+          <ShipmentLogs 
+            shipments={shipments}
+            customers={customers}
+            onUpdateShipments={handleUpdateShipments}
           />
         )}
 

@@ -14,7 +14,8 @@ import {
   Settings,
   Database,
   Menu,
-  X
+  X,
+  Truck
 } from 'lucide-react';
 
 export default function Header({ 
@@ -49,7 +50,7 @@ export default function Header({
             <h1 className="brand-title" style={{ cursor: 'pointer' }} onClick={() => { setActiveTab('dashboard'); setIsNavMenuOpen(false); }}>
               {company.name || 'IVK Garments'}
             </h1>
-            <span className="brand-badge">Enterprise Billing</span>
+            <span className="brand-badge">Business OS</span>
             <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
               <CheckCircle2 size={12} /> Online
             </span>
@@ -100,6 +101,14 @@ export default function Header({
           >
             <Database size={15} />
             <span>Payment Logs</span>
+          </button>
+
+          <button 
+            className={`tab-btn ${activeTab === 'shipments' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('shipments'); setIsNavMenuOpen(false); }}
+          >
+            <Truck size={15} />
+            <span>Shipments</span>
           </button>
 
           <button 
