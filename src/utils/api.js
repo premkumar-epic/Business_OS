@@ -256,6 +256,11 @@ export const api = {
       lrNo,
       poNo,
       agentName,
+      customerName,
+      customerAddress,
+      customerPhone,
+      customerGstin,
+      gstNote,
       ...coreInvoice 
     } = invoice;
     
@@ -281,7 +286,12 @@ export const api = {
         vehicleNo,
         lrNo,
         poNo,
-        agentName
+        agentName,
+        customerName,
+        customerAddress,
+        customerPhone,
+        customerGstin,
+        gstNote
       }
     };
     
