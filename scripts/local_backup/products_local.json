@@ -1,0 +1,58 @@
+[
+  {
+    "id": "prod-1",
+    "name": "Yellow Clothing \u2013 Style 6610 (Half Sleeves)",
+    "hsn": "6205",
+    "rate": 80.0,
+    "category": "Shirts"
+  },
+  {
+    "id": "prod-2",
+    "name": "Yellow Clothing \u2013 Style 6611 (Full Sleeves)",
+    "hsn": "6205",
+    "rate": 80.0,
+    "category": "Shirts"
+  },
+  {
+    "id": "prod-3",
+    "name": "Plain Lenin Shirts",
+    "hsn": "6205",
+    "rate": 125.0,
+    "category": "Shirts"
+  },
+  {
+    "id": "prod-4",
+    "name": "Checks Casual Shirts",
+    "hsn": "6205",
+    "rate": 145.0,
+    "category": "Shirts"
+  },
+  {
+    "id": "prod-5",
+    "name": "Oxford Slub Polo Shirts",
+    "hsn": "6205",
+    "rate": 165.0,
+    "category": "Shirts"
+  },
+  {
+    "id": "prod-6",
+    "name": "Officer Kids Wear",
+    "hsn": "6209",
+    "rate": 95.0,
+    "category": "Kids"
+  },
+  {
+    "id": "prod-7",
+    "name": "JEEP Casual Shirts",
+    "hsn": "6205",
+    "rate": 150.0,
+    "category": "Shirts"
+  },
+  {
+    "id": "prod-8",
+    "name": "Embroidery Work Charge",
+    "hsn": "9988",
+    "rate": 6.0,
+    "category": "Services"
+  }
+]

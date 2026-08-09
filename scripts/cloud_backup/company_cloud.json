@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "name": "IVK Garments",
+    "accountHolder": "IVK Garments",
+    "addressLine1": "1st Floor, Near Varun Lotus Appartments",
+    "addressLine2": "Singasandra",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560068",
+    "phone": "+91 9449645760",
+    "email": "ivkgarments@gmail.com",
+    "gstin": "29DPSPK8374F1Z2",
+    "contactPerson": "Vijay Kumar",
+    "bankName": "HDFC Bank",
+    "accountNo": "50200012345678",
+    "ifscCode": "HDFC0001234",
+    "branch": "Singasandra, Bengaluru",
+    "upiId": "9449645760@paytm",
+    "passcode": "9449",
+    "updated_at": "2026-08-08T08:10:42.344321+00:00"
+  }
+]

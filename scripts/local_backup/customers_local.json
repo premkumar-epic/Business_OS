@@ -1,0 +1,54 @@
+[
+  {
+    "id": "cust-1",
+    "name": "APB Designs",
+    "contactPerson": "Manager",
+    "phone": "+91 9845012345",
+    "email": "apbdesigns@gmail.com",
+    "address": "3rd Floor, 14th 'A' Cross, Adarsh Nagar, Begur Main Road, Hongasandra",
+    "city": "Bangalore",
+    "state": "Karnataka",
+    "pincode": "560068",
+    "gstin": "32KGPPS7947B1ZT",
+    "oldBalance": 150980.0
+  },
+  {
+    "id": "cust-2",
+    "name": "Babu (BATCHELOR)",
+    "contactPerson": "Babu",
+    "phone": "+91 9947774488",
+    "email": "batchelor.palakkad@gmail.com",
+    "address": "42/1103, New Delux Complex, GB Road, Near Punjab National Bank, Vaddakanthara",
+    "city": "Palakkad",
+    "state": "Kerala",
+    "pincode": "678001",
+    "gstin": "32KGPPS7947B1ZT",
+    "oldBalance": 100740.0
+  },
+  {
+    "id": "cust-3",
+    "name": "EX - Casuals",
+    "contactPerson": "Ex Manager",
+    "phone": "+91 9844001122",
+    "email": "excasuals@gmail.com",
+    "address": "Main Garment Complex, Industrial Area",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560068",
+    "gstin": "29EXCAS7890C1Z1",
+    "oldBalance": 0.0
+  },
+  {
+    "id": "cust-4",
+    "name": "Lux & Berg",
+    "contactPerson": "Rajesh",
+    "phone": "+91 9740112233",
+    "email": "luxberg@gmail.com",
+    "address": "Commercial Street Garment Zone",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560001",
+    "gstin": "29LUXBG5566A1Z4",
+    "oldBalance": 45000.0
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cust-1",
+    "name": "APB Designs",
+    "phone": "+91 9845012345",
+    "email": "apbdesigns@gmail.com",
+    "gstin": "32KGPPS7947B1ZT",
+    "addressLine1": "",
+    "addressLine2": "",
+    "city": "Bangalore",
+    "state": "Karnataka",
+    "pincode": "560068",
+    "oldBalance": 150980,
+    "updated_at": "2026-08-08T08:10:42.454344+00:00"
+  },
+  {
+    "id": "cust-2",
+    "name": "Babu (BATCHELOR)",
+    "phone": "+91 9947774488",
+    "email": "batchelor.palakkad@gmail.com",
+    "gstin": "32KGPPS7947B1ZT",
+    "addressLine1": "",
+    "addressLine2": "",
+    "city": "Palakkad",
+    "state": "Kerala",
+    "pincode": "678001",
+    "oldBalance": 100740,
+    "updated_at": "2026-08-08T08:10:42.511192+00:00"
+  },
+  {
+    "id": "cust-3",
+    "name": "EX - Casuals",
+    "phone": "+91 9844001122",
+    "email": "excasuals@gmail.com",
+    "gstin": "29EXCAS7890C1Z1",
+    "addressLine1": "",
+    "addressLine2": "",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560068",
+    "oldBalance": 0,
+    "updated_at": "2026-08-08T08:10:42.566857+00:00"
+  },
+  {
+    "id": "cust-4",
+    "name": "Lux & Berg",
+    "phone": "+91 9740112233",
+    "email": "luxberg@gmail.com",
+    "gstin": "29LUXBG5566A1Z4",
+    "addressLine1": "",
+    "addressLine2": "",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560001",
+    "oldBalance": 45000,
+    "updated_at": "2026-08-08T08:10:42.626127+00:00"
+  }
+]

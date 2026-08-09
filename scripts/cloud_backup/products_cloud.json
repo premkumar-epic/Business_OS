@@ -1,0 +1,66 @@
+[
+  {
+    "id": "prod-1",
+    "name": "Yellow Clothing \u2013 Style 6610 (Half Sleeves)",
+    "hsn": "6205",
+    "rate": 80,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:42.695025+00:00"
+  },
+  {
+    "id": "prod-2",
+    "name": "Yellow Clothing \u2013 Style 6611 (Full Sleeves)",
+    "hsn": "6205",
+    "rate": 80,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:42.738799+00:00"
+  },
+  {
+    "id": "prod-3",
+    "name": "Plain Lenin Shirts",
+    "hsn": "6205",
+    "rate": 125,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:42.795191+00:00"
+  },
+  {
+    "id": "prod-4",
+    "name": "Checks Casual Shirts",
+    "hsn": "6205",
+    "rate": 145,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:42.847809+00:00"
+  },
+  {
+    "id": "prod-5",
+    "name": "Oxford Slub Polo Shirts",
+    "hsn": "6205",
+    "rate": 165,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:42.894426+00:00"
+  },
+  {
+    "id": "prod-6",
+    "name": "Officer Kids Wear",
+    "hsn": "6209",
+    "rate": 95,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:42.946006+00:00"
+  },
+  {
+    "id": "prod-7",
+    "name": "JEEP Casual Shirts",
+    "hsn": "6205",
+    "rate": 150,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:42.995093+00:00"
+  },
+  {
+    "id": "prod-8",
+    "name": "Embroidery Work Charge",
+    "hsn": "9988",
+    "rate": 6,
+    "unit": "Pcs",
+    "updated_at": "2026-08-08T08:10:43.037786+00:00"
+  }
+]

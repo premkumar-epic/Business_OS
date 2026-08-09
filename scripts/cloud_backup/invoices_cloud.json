@@ -1,0 +1,191 @@
+[
+  {
+    "id": "inv-excasuals",
+    "invoiceNo": "EX-001",
+    "date": "2026-07-31",
+    "dueDate": "2026-08-14",
+    "referenceDC": "",
+    "ewayBillNo": "",
+    "vehicleNo": "",
+    "lrNo": "",
+    "poNo": "",
+    "agentName": "",
+    "showBankDetails": true,
+    "showSignature": true,
+    "notes": "Full payment received.",
+    "gstNote": "",
+    "customer": {
+      "name": "EX - Casuals",
+      "gstin": "29EXCAS7890C1Z1",
+      "phone": "+91 9844001122",
+      "address": "Main Garment Complex, Industrial Area, Bengaluru, Karnataka"
+    },
+    "items": [
+      {
+        "id": 1,
+        "rate": 145,
+        "amount": 185455,
+        "gstRate": 5,
+        "quantity": 1279,
+        "gstAmount": 9272.75,
+        "description": "EX - Casuals Main Shirts"
+      },
+      {
+        "id": 2,
+        "rate": 6,
+        "amount": 1674,
+        "gstRate": 18,
+        "quantity": 279,
+        "gstAmount": 301.32,
+        "description": "Embroidery Work (279 x 6)"
+      },
+      {
+        "id": 3,
+        "rate": 8,
+        "amount": 2176,
+        "gstRate": 18,
+        "quantity": 272,
+        "gstAmount": 391.68,
+        "description": "Embroidery Special (272 x 8)"
+      },
+      {
+        "id": 4,
+        "rate": 6,
+        "amount": 1908,
+        "gstRate": 5,
+        "quantity": 318,
+        "gstAmount": 95.4,
+        "description": "Old Checks (E)"
+      },
+      {
+        "id": 5,
+        "rate": 10,
+        "amount": 1640,
+        "gstRate": 5,
+        "quantity": 164,
+        "gstAmount": 82,
+        "description": "Old Brushing (P)"
+      }
+    ],
+    "customFields": [],
+    "subtotal": 192853,
+    "gstAmount": 5116,
+    "useCustomGstAmount": true,
+    "customGstAmount": 5116,
+    "oldBalance": 0,
+    "useCustomTotalAmount": false,
+    "customTotalAmount": 197969,
+    "totalAmount": 197969,
+    "status": "Paid",
+    "paidAmount": 197969,
+    "updated_at": "2026-08-08T08:10:43.09465+00:00"
+  },
+  {
+    "id": "inv-batchelor",
+    "invoiceNo": "B002",
+    "date": "2026-07-31",
+    "dueDate": "2026-08-15",
+    "referenceDC": "DC-BATCHELOR-01",
+    "ewayBillNo": "",
+    "vehicleNo": "",
+    "lrNo": "",
+    "poNo": "",
+    "agentName": "",
+    "showBankDetails": true,
+    "showSignature": true,
+    "notes": "Partially paid \u20b91,00,000 on 31st July.",
+    "gstNote": "",
+    "customer": {
+      "name": "Babu (BATCHELOR)",
+      "gstin": "32KGPPS7947B1ZT",
+      "phone": "+91 9947774488",
+      "address": "42/1103, New Delux Complex, GB Road, Near Punjab National Bank, Vaddakanthara, Palakad, Kerala"
+    },
+    "items": [
+      {
+        "id": 6,
+        "rate": 125,
+        "amount": 113375,
+        "gstRate": 5,
+        "quantity": 907,
+        "gstAmount": 5668.75,
+        "description": "Batchelor Shirts (907 x 125)"
+      },
+      {
+        "id": 7,
+        "rate": 6,
+        "amount": 5442,
+        "gstRate": 18,
+        "quantity": 907,
+        "gstAmount": 979.56,
+        "description": "Embroidery (907 x 6)"
+      }
+    ],
+    "customFields": [],
+    "subtotal": 118817,
+    "gstAmount": 3628,
+    "useCustomGstAmount": true,
+    "customGstAmount": 3628,
+    "oldBalance": 100740,
+    "useCustomTotalAmount": false,
+    "customTotalAmount": 223185,
+    "totalAmount": 223185,
+    "status": "Partially Paid",
+    "paidAmount": 100000,
+    "updated_at": "2026-08-08T08:10:43.142644+00:00"
+  },
+  {
+    "id": "inv-1",
+    "invoiceNo": "APB01",
+    "date": "2026-07-16",
+    "dueDate": "2026-07-30",
+    "referenceDC": "2727, 2738",
+    "ewayBillNo": "",
+    "vehicleNo": "",
+    "lrNo": "",
+    "poNo": "",
+    "agentName": "",
+    "showBankDetails": true,
+    "showSignature": true,
+    "notes": "Reference DC No. : 2727, 2738. Pending payment.",
+    "gstNote": "",
+    "customer": {
+      "name": "APB Designs",
+      "gstin": "32KGPPS7947B1ZT",
+      "phone": null,
+      "address": "3rd Floor, 14th 'A' Cross, Adarsh Nagar, Begur Main Road, Hongasandra, Bangalore - 560068"
+    },
+    "items": [
+      {
+        "id": 8,
+        "rate": 80,
+        "amount": 114160,
+        "gstRate": 5,
+        "quantity": 1427,
+        "gstAmount": 5708,
+        "description": "Yellow Clothing \u2013 Style No. : 6610"
+      },
+      {
+        "id": 9,
+        "rate": 80,
+        "amount": 111200,
+        "gstRate": 5,
+        "quantity": 1390,
+        "gstAmount": 5560,
+        "description": "Yellow Clothing \u2013 Style No. : 6611"
+      }
+    ],
+    "customFields": [],
+    "subtotal": 225360,
+    "gstAmount": 0,
+    "useCustomGstAmount": false,
+    "customGstAmount": 0,
+    "oldBalance": 150980,
+    "useCustomTotalAmount": false,
+    "customTotalAmount": 0,
+    "totalAmount": 376340,
+    "status": "Pending",
+    "paidAmount": 0,
+    "updated_at": "2026-08-08T08:10:43.198312+00:00"
+  }
+]
