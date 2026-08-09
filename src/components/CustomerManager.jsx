@@ -1,9 +1,35 @@
 import React, { useState } from 'react';
-import { Users, Plus, Edit2, Trash2, MapPin, Phone, Building, Save, X } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, MapPin, Phone, Building, Save, X, Banknote } from 'lucide-react';
 
-export default function CustomerManager({ customers, onAddCustomer, onUpdateCustomer, onDeleteCustomer }) {
+export default function CustomerManager({ customers, invoices = [], onAddCustomer, onUpdateCustomer, onDeleteCustomer, onRecordPayment }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
+  const [paymentModalData, setPaymentModalData] = useState(null);
+
+  const calculateTotalOutstanding = (cust) => {
+    if (!cust) return 0;
+    let totalNetBilled = 0;
+    let totalPaid = 0;
+    const norm = String(cust.name).trim().toLowerCase();
+    
+    invoices.forEach(inv => {
+      const invName = (inv && inv.customer && inv.customer.name) ? String(inv.customer.name).trim().toLowerCase() : '';
+      if (invName === norm && inv.status !== 'Draft') {
+        // True net amount of this invoice (excluding carried balance)
+        const netInvoiceAmount = Math.max(0, Number(inv.totalAmount || 0) - Number(inv.oldBalance || 0));
+        totalNetBilled += netInvoiceAmount;
+
+        if (inv.status === 'Paid') {
+          totalPaid += Number(inv.totalAmount || 0);
+        } else if (inv.status === 'Partially Paid') {
+          totalPaid += Number(inv.paidAmount || 0);
+        }
+      }
+    });
+
+    const baseOld = Number(cust.oldBalance || 0);
+    return baseOld + totalNetBilled - totalPaid;
+  };
   const [formData, setFormData] = useState({
     name: '',
     contactPerson: '',
@@ -110,15 +136,29 @@ export default function CustomerManager({ customers, onAddCustomer, onUpdateCust
                     <Building size={14} /> <strong>GSTIN:</strong> {c.gstin}
                   </div>
                 )}
-                {c.oldBalance > 0 && (
-                  <div style={{ marginTop: '0.5rem', color: 'var(--accent-warning)', fontWeight: '600' }}>
-                    Current Outstanding Balance: ₹{Number(c.oldBalance).toLocaleString('en-IN')}
-                  </div>
-                )}
+                {(() => {
+                  const totalOutstanding = calculateTotalOutstanding(c);
+                  if (totalOutstanding > 0) {
+                    return (
+                      <div style={{ marginTop: '0.5rem', color: 'var(--accent-warning)', fontWeight: '600' }}>
+                        Current Outstanding Balance: ₹{totalOutstanding.toLocaleString('en-IN')}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem' }}>
+              <button 
+                className="btn btn-secondary btn-icon" 
+                style={{ color: 'var(--accent-success)', borderColor: 'var(--accent-success)' }}
+                onClick={() => setPaymentModalData({ customer: c, amount: '' })} 
+                title="Record Payment"
+              >
+                <Banknote size={14} />
+              </button>
               <button className="btn btn-secondary btn-icon" onClick={() => handleOpenEdit(c)} title="Edit">
                 <Edit2 size={14} />
               </button>
@@ -248,6 +288,53 @@ export default function CustomerManager({ customers, onAddCustomer, onUpdateCust
           </div>
         </div>
       )}
+
+      {/* Payment Modal */}
+      {paymentModalData && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '400px' }}>
+            <div className="card-header">
+              <div className="card-title">
+                Record Payment
+              </div>
+              <button className="btn btn-secondary btn-icon" onClick={() => setPaymentModalData(null)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{ padding: '0.5rem 0', color: 'var(--text-muted)' }}>
+              Automatically allocate this payment to <strong>{paymentModalData.customer.name}</strong>'s oldest unpaid bills.
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              onRecordPayment(paymentModalData.customer.name, Number(paymentModalData.amount));
+              setPaymentModalData(null);
+            }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Payment Amount (₹) *</label>
+                <input 
+                  type="number" 
+                  className="form-input" 
+                  style={{ fontSize: '1.25rem', fontWeight: 'bold' }}
+                  required
+                  min="1"
+                  autoFocus
+                  value={paymentModalData.amount} 
+                  onChange={e => setPaymentModalData({ ...paymentModalData, amount: e.target.value })} 
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setPaymentModalData(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ background: 'var(--accent-success)', borderColor: 'var(--accent-success)' }}>
+                  <Banknote size={16} /> Apply Payment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
     </div>
   );

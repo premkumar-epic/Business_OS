@@ -208,6 +208,68 @@ export default function App() {
   };
 
   // Customer CRM Actions
+  const handleRecordPayment = async (customerName, amount) => {
+    if (!customerName || amount <= 0) return;
+    
+    // Find all invoices for this customer, sort by date (oldest first)
+    const norm = String(customerName).trim().toLowerCase();
+    const custInvoices = invoices
+      .filter(inv => {
+        const invName = (inv && inv.customer && inv.customer.name) ? String(inv.customer.name).trim().toLowerCase() : '';
+        return invName === norm && inv.status !== 'Draft' && inv.status !== 'Paid';
+      })
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+    let remainingPayment = amount;
+    const updatedInvoices = [];
+
+    for (const inv of custInvoices) {
+      if (remainingPayment <= 0) break;
+      
+      const netInvoiceAmount = Math.max(0, Number(inv.totalAmount || 0) - Number(inv.oldBalance || 0));
+      const currentPaid = Number(inv.paidAmount || 0);
+      const invoiceRemainingDebt = Math.max(0, netInvoiceAmount - currentPaid);
+      
+      if (invoiceRemainingDebt <= 0) continue;
+
+      const updatedInv = { ...inv };
+      
+      if (remainingPayment >= invoiceRemainingDebt) {
+        // Full payoff for this invoice
+        updatedInv.paidAmount = currentPaid + invoiceRemainingDebt;
+        updatedInv.status = 'Paid';
+        updatedInv.notes = `Auto-allocated ₹${invoiceRemainingDebt.toLocaleString('en-IN')} from bulk payment on ${new Date().toLocaleDateString('en-GB')}. ` + (updatedInv.notes || '');
+        remainingPayment -= invoiceRemainingDebt;
+      } else {
+        // Partial payoff
+        updatedInv.paidAmount = currentPaid + remainingPayment;
+        updatedInv.status = 'Partially Paid';
+        updatedInv.notes = `Auto-allocated partial ₹${remainingPayment.toLocaleString('en-IN')} from bulk payment on ${new Date().toLocaleDateString('en-GB')}. ` + (updatedInv.notes || '');
+        remainingPayment = 0;
+      }
+      
+      updatedInvoices.push(updatedInv);
+    }
+
+    if (updatedInvoices.length > 0) {
+      try {
+        await Promise.all(updatedInvoices.map(inv => api.saveInvoice(inv)));
+        
+        // Update local state for all modified invoices
+        setInvoices(prev => prev.map(inv => {
+          const updated = updatedInvoices.find(u => u.id === inv.id);
+          return updated ? updated : inv;
+        }));
+        
+        alert(`Successfully applied ₹${amount.toLocaleString('en-IN')} across ${updatedInvoices.length} invoices!`);
+      } catch (err) {
+        alert("Failed to save auto-allocated payments: " + err.message);
+      }
+    } else {
+      alert("No pending invoices found for this customer to allocate the payment to.");
+    }
+  };
+
   const handleAddCustomer = async (cust) => {
     try {
       await api.addCustomer(cust);
@@ -377,9 +439,11 @@ export default function App() {
         {activeTab === 'customers' && (
           <CustomerManager 
             customers={customers}
+            invoices={invoices}
             onAddCustomer={handleAddCustomer}
             onUpdateCustomer={handleUpdateCustomer}
             onDeleteCustomer={handleDeleteCustomer}
+            onRecordPayment={handleRecordPayment}
           />
         )}
 

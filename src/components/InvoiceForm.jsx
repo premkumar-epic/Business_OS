@@ -120,21 +120,25 @@ export default function InvoiceForm({
     if (!custName || !invoices || invoices.length === 0) return 0;
     const norm = String(custName).trim().toLowerCase();
 
-    let unpaidTotal = 0;
+    let totalNetBilled = 0;
+    let totalPaid = 0;
+
     invoices.forEach(inv => {
       const invName = (inv && inv.customer && inv.customer.name) ? String(inv.customer.name).trim().toLowerCase() : '';
-      if (inv.id !== currentInvId && invName === norm) {
-        if (inv.status === 'Pending') {
-          unpaidTotal += Number(inv.totalAmount || 0);
+      if (inv.id !== currentInvId && invName === norm && inv.status !== 'Draft') {
+        // True net amount of this specific invoice (Total minus carried old balance)
+        const netInvoiceAmount = Math.max(0, Number(inv.totalAmount || 0) - Number(inv.oldBalance || 0));
+        totalNetBilled += netInvoiceAmount;
+
+        if (inv.status === 'Paid') {
+          totalPaid += Number(inv.totalAmount || 0);
         } else if (inv.status === 'Partially Paid') {
-          const paid = Number(inv.paidAmount || 0);
-          const remaining = Math.max(0, Number(inv.totalAmount || 0) - paid);
-          unpaidTotal += remaining;
+          totalPaid += Number(inv.paidAmount || 0);
         }
       }
     });
 
-    return unpaidTotal;
+    return totalNetBilled - totalPaid;
   };
 
   useEffect(() => {
