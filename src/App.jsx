@@ -295,7 +295,6 @@ export default function App() {
           return invName === normOld;
         }).map(inv => ({
           ...inv,
-          customerName: updatedCust.name,
           customer: {
             ...inv.customer,
             name: updatedCust.name
