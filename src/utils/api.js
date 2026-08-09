@@ -218,8 +218,9 @@ export const api = {
         .order('date', { ascending: false });
       if (error) throw error;
       return data.map(inv => {
+        const ext = (inv.customer && inv.customer.extendedData) ? inv.customer.extendedData : {};
         const { settings, ...rest } = inv;
-        return { ...rest, ...(settings || {}) };
+        return { ...rest, ...ext, ...(settings || {}) };
       });
     }
 
@@ -227,71 +228,46 @@ export const api = {
     if (!res.ok) throw new Error("Failed to fetch invoices");
     const data = await res.json();
     return data.map(inv => {
+      const ext = (inv.customer && inv.customer.extendedData) ? inv.customer.extendedData : {};
       const { settings, ...rest } = inv;
-      return { ...rest, ...(settings || {}) };
+      return { ...rest, ...ext, ...(settings || {}) };
     });
   },
 
   async saveInvoice(invoice) {
     // Pack all dynamic/UI fields into a single 'settings' JSONB column
-    // to prevent Supabase strict schema errors on unknown columns.
     const { 
       discountAmount, 
       showContactDetails, 
-      showBankDetails, 
-      showSignature, 
       documentTitle, 
       _showDrafts, 
       isSaving,
       packingCharges,
       shippingCharges,
-      useCustomGstAmount,
-      customGstAmount,
-      oldBalance,
-      useCustomTotalAmount,
-      customTotalAmount,
-      referenceDC,
-      ewayBillNo,
-      vehicleNo,
-      lrNo,
-      poNo,
-      agentName,
       customerName,
       customerAddress,
       customerPhone,
       customerGstin,
-      gstNote,
+      settings,
       ...coreInvoice 
     } = invoice;
     
     const invoiceData = {
       ...coreInvoice,
       id: coreInvoice.id || 'inv-' + Date.now(),
-      settings: {
-        ...(coreInvoice.settings || {}),
-        discountAmount,
-        showContactDetails,
-        showBankDetails,
-        showSignature,
-        documentTitle,
-        packingCharges,
-        shippingCharges,
-        useCustomGstAmount,
-        customGstAmount,
-        oldBalance,
-        useCustomTotalAmount,
-        customTotalAmount,
-        referenceDC,
-        ewayBillNo,
-        vehicleNo,
-        lrNo,
-        poNo,
-        agentName,
-        customerName,
-        customerAddress,
-        customerPhone,
-        customerGstin,
-        gstNote
+      customer: {
+        ...(coreInvoice.customer || {}),
+        extendedData: {
+          discountAmount,
+          showContactDetails,
+          documentTitle,
+          packingCharges,
+          shippingCharges,
+          customerName,
+          customerAddress,
+          customerPhone,
+          customerGstin
+        }
       }
     };
     
