@@ -581,6 +581,7 @@ export default function InvoiceForm({
       status: invoice.status === 'Draft' ? 'Pending' : invoice.status
     };
     onSaveInvoice(finalInv);
+    setInvoice(finalInv); // Fix: Update local state to remove Draft watermark
     setSaveStatusAlert({ type: 'success', msg: '✓ Invoice successfully saved & finalized!' });
     setTimeout(() => setSaveStatusAlert(null), 3500);
   };

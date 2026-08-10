@@ -66,20 +66,18 @@ export default function InvoicePaper({ invoice, company, id = 'invoice-paper-ele
       {isDraft && (
         <div style={{
           position: 'absolute',
-          top: '40%',
+          top: '30%',
           left: '50%',
-          transform: 'translate(-50%, -50%) rotate(-30deg)',
-          fontSize: '6rem',
+          transform: 'translate(-50%, -50%) rotate(-45deg)',
+          fontSize: '120px',
           fontWeight: '900',
-          color: 'rgba(239, 68, 68, 0.12)',
-          border: '8px dashed rgba(239, 68, 68, 0.2)',
-          padding: '1rem 3rem',
-          borderRadius: '16px',
+          color: 'rgba(239, 68, 68, 0.05)',
+          whiteSpace: 'nowrap',
           pointerEvents: 'none',
-          zIndex: 10,
-          letterSpacing: '0.1em'
+          zIndex: 0,
+          userSelect: 'none'
         }}>
-          DRAFT
+          SAMPLE INVOICE
         </div>
       )}
 
@@ -107,7 +105,7 @@ export default function InvoicePaper({ invoice, company, id = 'invoice-paper-ele
 
           <div className="invoice-title-badge">
             <div className="invoice-title-text" style={{ color: isDraft ? '#ef4444' : '#0f172a' }}>
-              {isDraft ? `DRAFT ${documentTitle}` : documentTitle}
+              {isDraft ? `SAMPLE INVOICE` : documentTitle}
             </div>
             <table className="invoice-meta-table">
               <tbody>
