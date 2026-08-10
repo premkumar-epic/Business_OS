@@ -11,7 +11,7 @@ export default function ProductCatalog({ products, onAddProduct, onUpdateProduct
     category: 'Shirts',
     unit: 'Pcs',
     rate: 100,
-    hsnCode: '6205'
+    hsn: '6205'
   });
 
   const handleOpenAdd = () => {
@@ -22,7 +22,7 @@ export default function ProductCatalog({ products, onAddProduct, onUpdateProduct
       category: 'Shirts',
       unit: 'Pcs',
       rate: 100,
-      hsnCode: '6205'
+      hsn: '6205'
     });
     setIsModalOpen(true);
   };
@@ -91,7 +91,7 @@ export default function ProductCatalog({ products, onAddProduct, onUpdateProduct
                   <strong>{p.name}</strong>
                 </td>
                 <td data-label="Category">{p.category || 'Garments'}</td>
-                <td data-label="HSN Code" data-mobile-hide="hsn">{p.hsnCode || '6205'}</td>
+                <td data-label="HSN Code" data-mobile-hide="hsn">{p.hsn || '6205'}</td>
                 <td data-label="Unit" data-mobile-hide="unit">{p.unit || 'Pcs'}</td>
                 <td data-label="Standard Rate" style={{ textAlign: 'right' }}>
                   <strong style={{ fontSize: '1rem', color: 'var(--accent-success)' }}>
@@ -196,8 +196,8 @@ export default function ProductCatalog({ products, onAddProduct, onUpdateProduct
                     type="text" 
                     className="form-input" 
                     placeholder="6205" 
-                    value={formData.hsnCode} 
-                    onChange={e => setFormData({ ...formData, hsnCode: e.target.value })} 
+                    value={formData.hsn} 
+                    onChange={e => setFormData({ ...formData, hsn: e.target.value })} 
                   />
                 </div>
               </div>
