@@ -524,6 +524,37 @@ export default function CompanyProfileModal({ company, onUpdateCompany }) {
             </div>
           </div>
 
+          <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <h4 style={{ fontSize: '1rem', color: 'var(--accent-primary)', marginBottom: '1rem', fontWeight: '700' }}>
+              🔢 Custom Invoice Numbering
+            </h4>
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Global Sequence Prefix</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="e.g. TECH-2026-"
+                  value={formData.invoicePrefix || ''} 
+                  onChange={e => setFormData({ ...formData, invoicePrefix: e.target.value })} 
+                />
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Leave blank to use smart per-client prefixes (e.g. AF-, EX-)</span>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Sequence Padded Digits</label>
+                <input 
+                  type="number" 
+                  className="form-input" 
+                  min="1"
+                  max="10"
+                  placeholder="e.g. 3 (for 001)"
+                  value={formData.invoicePadding || ''} 
+                  onChange={e => setFormData({ ...formData, invoicePadding: e.target.value })} 
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="form-group">
             <label className="form-label">Business Address</label>
             <textarea 

@@ -203,25 +203,46 @@ export default function InvoiceForm({
   ]);
 
   const generateNextInvoiceNo = (clientName, invoicesList = []) => {
-    if (!clientName || clientName.trim() === '') return '';
+    let prefix = '';
+    let padding = 2;
+    let isCustomGlobal = false;
+    
+    if (company?.invoicePrefix && company.invoicePrefix.trim() !== '') {
+      prefix = company.invoicePrefix.trim();
+      isCustomGlobal = true;
+    }
 
-    const normName = clientName.trim().toLowerCase();
-    let prefix = 'IVK';
+    if (company?.invoicePadding) {
+      padding = Number(company.invoicePadding) || 2;
+    }
 
-    if (normName.includes('bachelor')) {
-      prefix = 'BH';
-    } else if (normName.includes('ex marketing') || normName.includes('ex-marketing')) {
-      prefix = 'EX';
-    } else if (normName.includes('apb designs') || normName.includes('apb-designs') || normName.includes('apb')) {
-      prefix = 'APB';
-    } else if (normName.includes('afroasia') || normName.includes('afro asia')) {
-      prefix = 'AF';
-    } else {
-      prefix = 'IVK';
+    if (!isCustomGlobal) {
+      if (!clientName || clientName.trim() === '') return '';
+      const normName = clientName.trim().toLowerCase();
+
+      if (normName.includes('bachelor')) {
+        prefix = 'BH-';
+      } else if (normName.includes('ex marketing') || normName.includes('ex-marketing')) {
+        prefix = 'EX-';
+      } else if (normName.includes('apb designs') || normName.includes('apb-designs') || normName.includes('apb')) {
+        prefix = 'APB-';
+      } else if (normName.includes('afroasia') || normName.includes('afro asia')) {
+        prefix = 'AF-';
+      } else {
+        prefix = 'IVK-';
+      }
     }
 
     let maxNum = 0;
-    const regex = new RegExp(`^${prefix}[-_]?(\\d+)`, 'i');
+    
+    // Escape prefix for regex
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedPrefix = escapeRegExp(prefix);
+    
+    // If it's custom global and ends with something like -, we don't strictly require another dash
+    const regex = isCustomGlobal 
+      ? new RegExp(`^${escapedPrefix}(\\d+)`, 'i') 
+      : new RegExp(`^${escapedPrefix.replace(/-$/, '')}[-_]?(\\d+)`, 'i');
 
     invoicesList.forEach(inv => {
       if (inv && inv.invoiceNo) {
@@ -236,8 +257,9 @@ export default function InvoiceForm({
     });
 
     const nextNum = maxNum + 1;
-    const paddedNum = String(nextNum).padStart(2, '0');
-    return `${prefix}-${paddedNum}`;
+    const paddedNum = String(nextNum).padStart(padding, '0');
+    
+    return `${prefix}${paddedNum}`;
   };
 
   const handleCustomerChange = (e) => {
@@ -303,7 +325,10 @@ export default function InvoiceForm({
 
       if (field === 'name') {
         const hasNoInvoiceNo = !prev.invoiceNo || prev.invoiceNo.trim() === '';
-        const matchesPreviousPrefix = /^(BH|EX|APB|AF|IVK)-/i.test(prev.invoiceNo);
+        let matchesPreviousPrefix = /^(BH|EX|APB|AF|IVK)-/i.test(prev.invoiceNo);
+        if (company?.invoicePrefix && prev.invoiceNo.startsWith(company.invoicePrefix)) {
+          matchesPreviousPrefix = true;
+        }
 
         if (hasNoInvoiceNo || matchesPreviousPrefix) {
           nextInvoiceNo = generateNextInvoiceNo(value, invoices);
