@@ -860,6 +860,46 @@ export default function InvoiceForm({
           </div>
         </div>
 
+        {/* Transport & Logistics Custom Fields */}
+        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
+            <Sliders size={16} /> Transport, E-Way & Logistics Fields
+          </label>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Reference DC No.</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={invoice.referenceDC || ''} 
+                onChange={e => setInvoice({ ...invoice, referenceDC: e.target.value })}
+                placeholder="e.g. 2727, 2738"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">E-Way Bill No.</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={invoice.ewayBillNo || ''} 
+                onChange={e => setInvoice({ ...invoice, ewayBillNo: e.target.value })}
+                placeholder="12 Digit E-Way Bill No."
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Vehicle / Transport No.</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={invoice.vehicleNo || ''} 
+                onChange={e => setInvoice({ ...invoice, vehicleNo: e.target.value })}
+                placeholder="e.g. KA-01-AB-1234"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Customer Select & Detail */}
         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
           <div className="customer-select-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
@@ -911,46 +951,6 @@ export default function InvoiceForm({
               onChange={e => handleCustomCustomerField('address', e.target.value)}
               placeholder="Street, Area, City, State, Pincode"
             />
-          </div>
-        </div>
-
-        {/* Transport & Logistics Custom Fields */}
-        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
-            <Sliders size={16} /> Transport, E-Way & Logistics Fields
-          </label>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Reference DC No.</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={invoice.referenceDC || ''} 
-                onChange={e => setInvoice({ ...invoice, referenceDC: e.target.value })}
-                placeholder="e.g. 2727, 2738"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">E-Way Bill No.</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={invoice.ewayBillNo || ''} 
-                onChange={e => setInvoice({ ...invoice, ewayBillNo: e.target.value })}
-                placeholder="12 Digit E-Way Bill No."
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Vehicle / Transport No.</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={invoice.vehicleNo || ''} 
-                onChange={e => setInvoice({ ...invoice, vehicleNo: e.target.value })}
-                placeholder="e.g. KA-01-AB-1234"
-              />
-            </div>
           </div>
         </div>
 
