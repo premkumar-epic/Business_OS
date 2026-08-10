@@ -379,10 +379,10 @@ export default function InvoicePaper({ invoice, company, id = 'invoice-paper-ele
           <div className="bank-details-box" style={{ width: '60%' }}>
             <h5>BANK DETAILS & CONTACT</h5>
             <div style={{ fontSize: '0.8rem', lineHeight: '1.4', color: '#475569' }}>
-              <strong>A/C Holder Name:</strong> {company.accountHolder || company.name || 'IVK Garments'}<br />
-              <strong>Bank Name:</strong> {company.bankName || 'HDFC Bank'}<br />
-              <strong>A/C No:</strong> {company.accountNo || '50200012345678'}<br />
-              <strong>IFSC Code:</strong> {company.ifscCode || 'HDFC0001234'}<br />
+              <strong>A/C Holder Name:</strong> {company.accountHolder || company.name || 'Your Company Name'}<br />
+              <strong>Bank Name:</strong> {company.bankName || 'Your Bank Name'}<br />
+              <strong>A/C No:</strong> {company.accountNo || 'XXXX-XXXX-XXXX'}<br />
+              <strong>IFSC Code:</strong> {company.ifsc || company.ifscCode || 'XXXX0000000'}<br />
               {invoice.showContactDetails !== false && (
                 <div style={{ marginTop: '0.4rem' }}>
                   If you have any questions about this invoice, please contact<br />

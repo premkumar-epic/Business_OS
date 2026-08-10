@@ -48,7 +48,7 @@ export default function Header({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             <h1 className="brand-title" style={{ cursor: 'pointer' }} onClick={() => { setActiveTab('dashboard'); setIsNavMenuOpen(false); }}>
-              {company.name || 'IVK Garments'}
+              {company.name || 'Your Business'}
             </h1>
             <span className="brand-badge">Business OS</span>
             <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>

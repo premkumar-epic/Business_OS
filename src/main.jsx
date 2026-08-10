@@ -45,7 +45,7 @@ class ErrorBoundary extends React.Component {
             boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
           }}>
             <h2 style={{ fontSize: '1.4rem', color: '#ef4444', marginBottom: '0.75rem' }}>
-              IVK Garments Billing System
+              Business OS
             </h2>
             <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '1.5rem' }}>
               An unexpected error occurred while rendering. Click below to reset application data to defaults.

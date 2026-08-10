@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, KeyRound, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { api } from '../utils/api';
 
-export default function AuthLockScreen({ onUnlock, companyName = 'IVK Garments' }) {
+export default function AuthLockScreen({ onUnlock, companyName = 'Business OS' }) {
   const [pinInput, setPinInput] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');

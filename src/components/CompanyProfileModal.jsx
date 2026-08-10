@@ -115,7 +115,7 @@ export default function CompanyProfileModal({ company, onUpdateCompany }) {
       setSyncStatus('Merging company settings...');
       if (cloudCompany.length > 0) {
         const cloudComp = cloudCompany[0];
-        if (!localCompany.name || localCompany.name === 'IVK Garments') {
+        if (!localCompany.name || localCompany.name === 'Default Company') {
           await postLocal('company', cloudComp);
         }
       }
@@ -459,7 +459,7 @@ export default function CompanyProfileModal({ company, onUpdateCompany }) {
         <div className="card-header">
           <div className="card-title">
             <Building2 className="text-indigo-400" size={22} />
-            IVK Garments Business & Bank Profile
+            Business & Bank Profile
           </div>
         </div>
 
@@ -575,7 +575,7 @@ export default function CompanyProfileModal({ company, onUpdateCompany }) {
               <input 
                 type="text" 
                 className="form-input" 
-                placeholder="e.g. IVK Garments / Vijay Kumar"
+                placeholder="e.g. Business Name / Owner Name"
                 value={formData.accountHolder || ''} 
                 onChange={e => setFormData({ ...formData, accountHolder: e.target.value })} 
               />

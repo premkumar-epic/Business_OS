@@ -529,7 +529,7 @@ export default function App() {
   };
 
   if (!isUnlocked) {
-    return <AuthLockScreen onUnlock={handleUnlock} companyName={company?.name || 'IVK Garments'} />;
+    return <AuthLockScreen onUnlock={handleUnlock} companyName={company?.name || 'Your Business'} />;
   }
 
   if (isLoading) {
@@ -558,7 +558,7 @@ export default function App() {
             100% { transform: rotate(360deg); }
           }
         `}</style>
-        <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>Loading IVK Garments Database...</span>
+        <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>Loading Business OS Database...</span>
       </div>
     );
   }

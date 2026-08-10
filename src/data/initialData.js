@@ -1,6 +1,6 @@
 export const defaultCompany = {
-  name: "IVK Garments",
-  accountHolder: "IVK Garments",
+  name: "Business OS",
+  accountHolder: "Business OS",
   addressLine1: "1st Floor, Near Varun Lotus Appartments",
   addressLine2: "Singasandra",
   city: "Bengaluru",

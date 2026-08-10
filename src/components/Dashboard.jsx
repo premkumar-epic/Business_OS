@@ -154,7 +154,7 @@ export default function Dashboard({
             </h2>
           </div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Here is your live business overview for <strong>{safeCompany.name || 'IVK Garments'}</strong> (Singasandra, Bengaluru)
+            Here is your live business overview for <strong>{safeCompany.name || 'Your Business'}</strong>
           </p>
         </div>
         <div>
@@ -526,7 +526,7 @@ export default function Dashboard({
               {!importSummary ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-md)', padding: '2rem 1.5rem', textAlign: 'center', background: 'var(--bg-secondary)' }}>
                   <Database size={40} color="#6366f1" style={{ marginBottom: '1rem' }} />
-                  <p style={{ fontWeight: '500', marginBottom: '0.25rem' }}>Upload "IVK Garments+Form.xlsx" sheet</p>
+                  <p style={{ fontWeight: '500', marginBottom: '0.25rem' }}>Upload "Business+Form.xlsx" sheet</p>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Maps all sub-brands/customers directly to parent customer "Afroasia Exports"</p>
                   <input 
                     type="file" 
