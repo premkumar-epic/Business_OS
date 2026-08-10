@@ -67,6 +67,7 @@ export default function InvoiceForm({
       discountAmount: 0,
       shippingCharges: 0,
       packingCharges: 0,
+      applyGst: false,
       useCustomGstAmount: false,
       customGstAmount: 0,
       gstRate: 0,
@@ -146,6 +147,7 @@ export default function InvoiceForm({
       setInvoice(prev => ({
         ...prev,
         ...initialInvoice,
+        applyGst: initialInvoice.applyGst ?? (Number(initialInvoice.gstAmount || initialInvoice.gstRate) > 0),
         showBankDetails: initialInvoice.showBankDetails !== false,
         showSignature: initialInvoice.showSignature !== false,
         customFields: initialInvoice.customFields || []
@@ -159,24 +161,19 @@ export default function InvoiceForm({
 
   useEffect(() => {
     const subtotal = roundToTwo(invoice.items.reduce((sum, item) => sum + (Number(item.amount) || 0), 0));
-    
-    // Sum item-level GST
-    const calculatedGst = roundToTwo(invoice.items.reduce((sum, item) => {
-      const itemGstRate = Number(item.gstRate) || 0;
-      const itemAmount = Number(item.amount) || 0;
-      const itemGst = roundToTwo(itemAmount * (itemGstRate / 100));
-      return sum + itemGst;
-    }, 0));
-
     const discount = Number(invoice.discountAmount) || 0;
     const shipping = Number(invoice.shippingCharges) || 0;
     const packing = Number(invoice.packingCharges) || 0;
     
     const taxableAmount = Math.max(0, subtotal - discount + shipping + packing);
-    
-    const finalGst = invoice.useCustomGstAmount && Number(invoice.customGstAmount) >= 0
-      ? Number(invoice.customGstAmount)
-      : calculatedGst;
+    const gstRate = Number(invoice.gstRate) || 0;
+
+    let finalGst = 0;
+    if (invoice.applyGst) {
+      finalGst = invoice.useCustomGstAmount && Number(invoice.customGstAmount) >= 0
+        ? Number(invoice.customGstAmount)
+        : roundToTwo(taxableAmount * (gstRate / 100));
+    }
 
     const oldBalance = Number(invoice.oldBalance) || 0;
     const calculatedTotal = Math.round(taxableAmount + finalGst + oldBalance);
@@ -196,8 +193,10 @@ export default function InvoiceForm({
     invoice.discountAmount, 
     invoice.shippingCharges, 
     invoice.packingCharges, 
+    invoice.applyGst,
     invoice.useCustomGstAmount,
     invoice.customGstAmount,
+    invoice.gstRate,
     invoice.oldBalance,
     invoice.useCustomTotalAmount,
     invoice.customTotalAmount
@@ -1110,36 +1109,61 @@ export default function InvoiceForm({
           <div className="form-row">
             <div className="form-group">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                <label className="form-label" style={{ marginBottom: 0 }}>GST Tax Calculation</label>
-                <label style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', color: '#818cf8' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={invoice.useCustomGstAmount || false} 
-                    onChange={e => setInvoice({ ...invoice, useCustomGstAmount: e.target.checked })}
-                  />
-                  Custom GST ₹
-                </label>
+                <label className="form-label" style={{ marginBottom: 0 }}>GST Tax (CGST / SGST)</label>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <label style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', color: '#10b981', fontWeight: 'bold' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={invoice.applyGst || false} 
+                      onChange={e => setInvoice({ ...invoice, applyGst: e.target.checked })}
+                    />
+                    Apply GST
+                  </label>
+                  {invoice.applyGst && (
+                    <label style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', color: '#818cf8' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={invoice.useCustomGstAmount || false} 
+                        onChange={e => setInvoice({ ...invoice, useCustomGstAmount: e.target.checked })}
+                      />
+                      Custom GST ₹
+                    </label>
+                  )}
+                </div>
               </div>
 
-              {invoice.useCustomGstAmount ? (
-                <input 
-                  type="number" 
-                  className="form-input" 
-                  value={invoice.customGstAmount ?? ''} 
-                  onChange={e => setInvoice({ ...invoice, customGstAmount: Number(e.target.value) })}
-                  placeholder="Enter Custom GST Amount (e.g. 5116 or 3628)"
-                />
+              {invoice.applyGst ? (
+                invoice.useCustomGstAmount ? (
+                  <input 
+                    type="number" 
+                    className="form-input" 
+                    value={invoice.customGstAmount ?? ''} 
+                    onChange={e => setInvoice({ ...invoice, customGstAmount: Number(e.target.value) })}
+                    placeholder="Enter Custom GST Amount (₹)"
+                  />
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input 
+                      type="number" 
+                      className="form-input" 
+                      style={{ width: '100px' }}
+                      value={invoice.gstRate ?? ''} 
+                      onChange={e => setInvoice({ ...invoice, gstRate: Number(e.target.value) })}
+                      placeholder="GST %"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                    />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>% GST</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      (Calculated: ₹{Number(invoice.gstAmount || 0).toLocaleString('en-IN')})
+                    </span>
+                  </div>
+                )
               ) : (
-                <select 
-                  className="form-select"
-                  value={invoice.gstRate}
-                  onChange={e => setInvoice({ ...invoice, gstRate: Number(e.target.value) })}
-                >
-                  <option value={0}>0% (Tax Exempt / Nil)</option>
-                  <option value={5}>5% GST (Garments Standard)</option>
-                  <option value={12}>12% GST</option>
-                  <option value={18}>18% GST</option>
-                </select>
+                <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', fontSize: '0.825rem', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
+                  GST is currently disabled. Check \"Apply GST\" to enable tax calculation.
+                </div>
               )}
             </div>
 

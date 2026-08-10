@@ -30,9 +30,11 @@ export default function InvoicePaper({ invoice, company, id = 'invoice-paper-ele
   const isDraft = invoice.status === 'Draft';
 
   // Robust GST Amount determination
-  const finalGstAmount = (invoice.useCustomGstAmount || Number(invoice.customGstAmount) > 0)
-    ? Number(invoice.customGstAmount || 0)
-    : Number(invoice.gstAmount || (invoice.subtotal * ((invoice.gstRate || 0) / 100)) || 0);
+  const finalGstAmount = invoice.applyGst !== false
+    ? ((invoice.useCustomGstAmount || Number(invoice.customGstAmount) > 0)
+      ? Number(invoice.customGstAmount || 0)
+      : Number(invoice.gstAmount || (invoice.subtotal * ((invoice.gstRate || 0) / 100)) || 0))
+    : 0;
 
   const showBankDetails = invoice.showBankDetails !== false;
   const showSignature = invoice.showSignature !== false;
