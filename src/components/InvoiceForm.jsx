@@ -1143,20 +1143,30 @@ export default function InvoiceForm({
                   />
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <select
+                      className="form-select"
+                      style={{ width: '130px', padding: '0.35rem 0.5rem', fontSize: '0.85rem' }}
+                      value={invoice.gstType || 'AUTO'}
+                      onChange={e => setInvoice({ ...invoice, gstType: e.target.value })}
+                    >
+                      <option value="AUTO">Auto (State)</option>
+                      <option value="CGST_SGST">CGST+SGST</option>
+                      <option value="IGST">IGST Only</option>
+                    </select>
                     <input 
                       type="number" 
                       className="form-input" 
-                      style={{ width: '100px' }}
+                      style={{ width: '80px' }}
                       value={invoice.gstRate ?? ''} 
                       onChange={e => setInvoice({ ...invoice, gstRate: Number(e.target.value) })}
-                      placeholder="GST %"
+                      placeholder="Rate %"
                       min="0"
                       max="100"
                       step="0.1"
                     />
-                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>% GST</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>%</span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      (Calculated: ₹{Number(invoice.gstAmount || 0).toLocaleString('en-IN')})
+                      (₹{Number(invoice.gstAmount || 0).toLocaleString('en-IN')})
                     </span>
                   </div>
                 )

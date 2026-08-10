@@ -296,9 +296,16 @@ export default function InvoicePaper({ invoice, company, id = 'invoice-paper-ele
 
               {/* GST BIFURCATION (CGST+SGST OR IGST) */}
               {finalGstAmount > 0 && (() => {
-                const customerState = (invoice.customer?.state || '').trim().toLowerCase();
-                const companyState = (company.state || 'Karnataka').trim().toLowerCase();
-                const isInterState = customerState && companyState && customerState !== companyState;
+                let isInterState = false;
+                if (invoice.gstType === 'IGST') {
+                  isInterState = true;
+                } else if (invoice.gstType === 'CGST_SGST') {
+                  isInterState = false;
+                } else {
+                  const customerState = (invoice.customer?.state || '').trim().toLowerCase();
+                  const companyState = (company.state || 'Karnataka').trim().toLowerCase();
+                  isInterState = customerState && companyState && customerState !== companyState;
+                }
                 
                 if (isInterState) {
                   return (
