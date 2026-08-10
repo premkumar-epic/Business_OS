@@ -250,6 +250,7 @@ export const api = {
       customerGstin,
       settings,
       applyGst,
+      gstType,
       ...coreInvoice 
     } = invoice;
     
@@ -268,7 +269,8 @@ export const api = {
           customerAddress,
           customerPhone,
           customerGstin,
-          applyGst
+          applyGst,
+          gstType
         }
       }
     };
