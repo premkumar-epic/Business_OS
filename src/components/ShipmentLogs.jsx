@@ -14,6 +14,7 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
     customerId: '',
     lrNumber: '',
     courierName: '',
+    dcNumber: '',
     expectedDelivery: '',
     shippingCost: '',
     brand: '',
@@ -108,14 +109,20 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
     return groups;
   }, [filteredShipments]);
 
+  const uniqueBrands = useMemo(() => {
+    const brands = shipments.map(s => String(s.brand || '').trim()).filter(Boolean);
+    return Array.from(new Set(brands)).sort();
+  }, [shipments]);
+
   const handleOpenModal = () => {
     setEditingShipment(null);
     setFormData({
       id: `ship-${Date.now()}`,
       dispatchDate: new Date().toISOString().split('T')[0],
-      customerId: customers.length > 0 ? customers[0].id : '',
+      customerId: '',
       lrNumber: '',
       courierName: '',
+      dcNumber: '',
       expectedDelivery: '',
       shippingCost: '',
       brand: '',
@@ -133,8 +140,8 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
   };
 
   const handleSaveShipment = async () => {
-    if (!formData.customerId || !formData.lrNumber || !formData.courierName) {
-      alert("Please fill in Client, LR Number, and Courier Name!");
+    if (!formData.customerId) {
+      alert("Please select a Client!");
       return;
     }
     
@@ -230,6 +237,7 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
                   <th>Client Name</th>
                   <th>Sub Brand</th>
                   <th>Pcs</th>
+                  <th>DC No</th>
                   <th>Courier / LR No</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
@@ -286,10 +294,17 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
                             {ship.numberOfPieces ? `${ship.numberOfPieces.toLocaleString('en-IN')} pcs` : '-'}
                           </td>
                           <td>
+                            <span style={{ color: '#475569', fontWeight: '500' }}>{ship.dcNumber || '-'}</span>
+                          </td>
+                          <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <Truck size={14} color="#64748b" />
-                              <span>{ship.courierName}</span>
-                              <span className="badge badge-secondary" style={{ marginLeft: '0.25rem' }}>{ship.lrNumber}</span>
+                              {(ship.courierName || ship.lrNumber) ? (
+                                <>
+                                  <Truck size={14} color="#64748b" />
+                                  <span>{ship.courierName || 'Courier'}</span>
+                                  {ship.lrNumber && <span className="badge badge-secondary" style={{ marginLeft: '0.25rem' }}>{ship.lrNumber}</span>}
+                                </>
+                              ) : '-'}
                             </div>
                           </td>
                           <td style={{ textAlign: 'right' }}>
@@ -350,16 +365,31 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
 
               <div className="form-group">
                 <label className="form-label">Dispatch Date <span style={{ color: 'red' }}>*</span></label>
+                <div style={{ position: 'relative' }}>
+                  <Calendar size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                  <input 
+                    type="date" 
+                    className="form-input"
+                    value={formData.dispatchDate}
+                    onChange={(e) => setFormData({...formData, dispatchDate: e.target.value})}
+                    style={{ paddingLeft: '32px' }}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">DC Number</label>
                 <input 
-                  type="date" 
+                  type="text" 
                   className="form-input"
-                  value={formData.dispatchDate}
-                  onChange={(e) => setFormData({...formData, dispatchDate: e.target.value})}
+                  placeholder="Delivery Challan No."
+                  value={formData.dcNumber || ''}
+                  onChange={(e) => setFormData({...formData, dcNumber: e.target.value})}
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Courier / Transport Name <span style={{ color: 'red' }}>*</span></label>
+                <label className="form-label">Courier / Transport Name</label>
                 <input 
                   type="text" 
                   className="form-input"
@@ -370,7 +400,7 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
               </div>
 
               <div className="form-group">
-                <label className="form-label">LR Number / Tracking ID <span style={{ color: 'red' }}>*</span></label>
+                <label className="form-label">LR Number / Tracking ID</label>
                 <input 
                   type="text" 
                   className="form-input"
@@ -381,22 +411,32 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
 
               <div className="form-group">
                 <label className="form-label">Expected Delivery Date (Optional)</label>
-                <input 
-                  type="date" 
-                  className="form-input"
-                  value={formData.expectedDelivery}
-                  onChange={(e) => setFormData({...formData, expectedDelivery: e.target.value})}
-                />
+                <div style={{ position: 'relative' }}>
+                  <Calendar size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                  <input 
+                    type="date" 
+                    className="form-input"
+                    value={formData.expectedDelivery}
+                    onChange={(e) => setFormData({...formData, expectedDelivery: e.target.value})}
+                    style={{ paddingLeft: '32px' }}
+                  />
+                </div>
               </div>
 
               <div className="form-group">
                 <label className="form-label">Brand Name</label>
                 <input 
-                  type="text" 
+                  list="brand-options"
                   className="form-input"
+                  placeholder="Select or type new brand..."
                   value={formData.brand}
                   onChange={(e) => setFormData({...formData, brand: e.target.value})}
                 />
+                <datalist id="brand-options">
+                  {uniqueBrands.map(b => (
+                    <option key={b} value={b} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="form-group">
