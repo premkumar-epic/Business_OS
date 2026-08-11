@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Truck, Calendar, Search, Plus, Save, X, Edit2, Trash2 } from 'lucide-react';
+import { Truck, Calendar, Search, Plus, Save, X, Edit2, Trash2, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 export default function ShipmentLogs({ shipments = [], customers, onUpdateShipments }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -171,6 +172,29 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
     }
   };
 
+  const handleExportExcel = () => {
+    const exportData = filteredShipments.map(s => {
+      const cust = customers.find(c => c.id === s.customerId);
+      return {
+        'Date': s.dispatchDate,
+        'Customer / Brand': cust ? cust.name : s.brand,
+        'Brand Name': s.brand,
+        'Item Name': s.itemName,
+        'Quantity (pcs)': s.numberOfPieces,
+        'LR Number': s.lrNumber,
+        'Courier Name': s.courierName,
+        'Expected Delivery': s.expectedDelivery,
+        'Shipping Cost (₹)': s.shippingCost,
+        'Remarks': s.otherStuffs
+      };
+    });
+    
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Shipment_Logs');
+    XLSX.writeFile(workbook, `IVK_Shipment_Logs_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   return (
     <div className="page-wrapper">
       <div className="form-card">
@@ -216,6 +240,9 @@ export default function ShipmentLogs({ shipments = [], customers, onUpdateShipme
               <option value="pcs-asc">Pcs: Lowest First</option>
             </select>
 
+            <button className="btn btn-secondary" onClick={handleExportExcel}>
+              <Download size={16} /> Export
+            </button>
             <button className="btn btn-primary" onClick={handleOpenModal}>
               <Plus size={16} /> Record Shipment
             </button>
