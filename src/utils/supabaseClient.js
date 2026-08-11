@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const BETA_URL = 'https://vwmutpuizshsatwlyeab.supabase.co';
-const BETA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3bXV0cHVpenNoc2F0d2x5ZWFiIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.Fo6LeXBEtvhExZXhd_25OhOlSdPiYwPC9TL3Ac-Afsw';
+const BETA_KEY = 'sb_publishable_gO3i8RhRyBgFdUbMSY1Sog_EHjmVCDv';
 
 const getSupabaseConfig = () => {
   // Foolproof override: If we are on the beta Vercel URL, strictly use the Beta Database.
