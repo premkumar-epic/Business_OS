@@ -1,6 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
+const BETA_URL = 'https://vwmutpuizshsatwlyeab.supabase.co';
+const BETA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3bXV0cHVpenNoc2F0d2x5ZWFiIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.Fo6LeXBEtvhExZXhd_25OhOlSdPiYwPC9TL3Ac-Afsw';
+
 const getSupabaseConfig = () => {
+  // Foolproof override: If we are on the beta Vercel URL, strictly use the Beta Database.
+  // This bypasses Vercel's Supabase Integration forcibly injecting Production keys into Preview builds.
+  if (typeof window !== 'undefined' && window.location.hostname.includes('beta')) {
+    return { url: BETA_URL, key: BETA_KEY };
+  }
+
   const url = localStorage.getItem('ivk_supabase_url') || import.meta.env.VITE_SUPABASE_URL || '';
   const key = localStorage.getItem('ivk_supabase_key') || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
   return { url, key };
