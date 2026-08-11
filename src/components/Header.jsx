@@ -24,6 +24,7 @@ export default function Header({
   theme, 
   toggleTheme, 
   company = {}, 
+  currentUser,
   onNewInvoice,
   onLock
 }) {
@@ -199,21 +200,35 @@ export default function Header({
 
                   {onLock && (
                     <button 
-                      type="button"
-                      className="settings-dropdown-item text-red-500" 
-                      onClick={() => {
-                        onLock();
-                        setIsSettingsOpen(false);
-                      }}
-                    >
-                      <Lock size={16} />
-                      <span>Lock System</span>
-                    </button>
-                  )}
+                    type="button"
+                    className="settings-dropdown-item"
+                    onClick={() => {
+                      onLock();
+                      setIsSettingsOpen(false);
+                    }}
+                    style={{ borderTop: '1px solid var(--border-color)', marginTop: '0.5rem', paddingTop: '0.75rem', color: '#ef4444' }}
+                  >
+                    <Lock size={16} />
+                    <span>Secure Logout</span>
+                  </button>
+                )}
                 </div>
               </>
             )}
           </div>
+
+          {/* User Profile Badge */}
+          {currentUser && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: '0.5rem' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                {currentUser?.user_metadata?.role || 'Admin'}
+              </span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                {currentUser?.email?.split('@')[0] || 'admin'}
+              </span>
+            </div>
+          )}
+
         </div>
       </nav>
     </header>

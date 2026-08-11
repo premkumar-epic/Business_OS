@@ -3,23 +3,24 @@ import { Lock, KeyRound, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-rea
 import { api } from '../utils/api';
 
 export default function AuthLockScreen({ onUnlock, companyName = 'Business OS' }) {
-  const [pinInput, setPinInput] = useState('');
-  const [showPin, setShowPin] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const handleUnlock = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!pinInput.trim()) return;
+    if (!passwordInput.trim()) return;
     
     setIsLoggingIn(true);
     setErrorMsg('');
     try {
-      await api.unlock(pinInput.trim());
-      onUnlock();
+      const res = await api.login(emailInput.trim(), passwordInput.trim());
+      onUnlock(res.user);
     } catch (err) {
-      setErrorMsg(err.message || 'Incorrect passcode. Access Denied.');
-      setPinInput('');
+      setErrorMsg(err.message || 'Incorrect credentials. Access Denied.');
+      setPasswordInput('');
     } finally {
       setIsLoggingIn(false);
     }
@@ -77,31 +78,47 @@ export default function AuthLockScreen({ onUnlock, companyName = 'Business OS' }
           </div>
         )}
 
-        <form onSubmit={handleUnlock} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          
           <div className="form-group" style={{ textAlign: 'left' }}>
-            <label className="form-label">Master Passcode / PIN</label>
+            <label className="form-label">Email Address</label>
+            <input 
+              type="email" 
+              className="form-input"
+              style={{ fontSize: '1.05rem', padding: '0.65rem' }}
+              placeholder="e.g. admin@ivkgarments.com"
+              value={emailInput}
+              onChange={e => {
+                setEmailInput(e.target.value);
+                setErrorMsg('');
+              }}
+              autoFocus
+              required
+            />
+          </div>
+
+          <div className="form-group" style={{ textAlign: 'left' }}>
+            <label className="form-label">Password</label>
             <div style={{ position: 'relative' }}>
               <input 
-                type={showPin ? 'text' : 'password'} 
+                type={showPassword ? 'text' : 'password'} 
                 className="form-input"
                 style={{
                   paddingRight: '2.5rem',
-                  fontSize: '1.1rem',
-                  letterSpacing: '0.1em',
-                  fontWeight: 'bold',
-                  textAlign: 'center'
+                  fontSize: '1.05rem',
+                  padding: '0.65rem'
                 }}
-                placeholder="Enter Passcode"
-                value={pinInput}
+                placeholder="Enter password"
+                value={passwordInput}
                 onChange={e => {
-                  setPinInput(e.target.value);
+                  setPasswordInput(e.target.value);
                   setErrorMsg('');
                 }}
-                autoFocus
+                required
               />
               <button 
                 type="button" 
-                onClick={() => setShowPin(!showPin)}
+                onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute',
                   right: '10px',
@@ -113,13 +130,13 @@ export default function AuthLockScreen({ onUnlock, companyName = 'Business OS' }
                   cursor: 'pointer'
                 }}
               >
-                {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem', fontSize: '0.95rem' }} disabled={isLoggingIn}>
-            {isLoggingIn ? 'Verifying PIN...' : <><ShieldCheck size={18} /> Unlock System Access</>}
+            {isLoggingIn ? 'Verifying...' : <><ShieldCheck size={18} /> Secure Login</>}
           </button>
         </form>
 

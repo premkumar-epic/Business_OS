@@ -318,33 +318,46 @@ export const api = {
   },
 
   // Secure Auth
-  async unlock(password) {
-    if (useSupabase()) {
-      try {
-        const company = await this.getCompany();
-        const companyPin = company.passcode || "9449";
-        if (password === companyPin) {
-          return { success: true, token: "supabase_auth_token_xyz" };
-        } else {
-          throw new Error("Invalid Passcode");
-        }
-      } catch (e) {
-        if (password === "9449") {
-          return { success: true, token: "supabase_auth_token_xyz" };
-        }
-        throw new Error("Invalid Passcode");
-      }
+  async login(email, password) {
+    // Master fallback to prevent lockouts during setup
+    if (password === "9449") {
+      return { 
+        success: true, 
+        user: { 
+          email: email || 'admin@ivkgarments.com', 
+          user_metadata: { role: email.includes('staff') ? 'Staff' : 'Admin' } 
+        } 
+      };
     }
 
-    const res = await fetch(`${API_BASE}/auth/unlock`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password })
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Access Denied");
+    if (useSupabase()) {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) throw new Error(error.message);
+      return { success: true, session: data.session, user: data.user };
     }
-    return res.json();
+
+    throw new Error("Invalid Credentials");
+  },
+
+  async logout() {
+    if (useSupabase()) {
+      const supabase = getSupabaseClient();
+      await supabase.auth.signOut();
+    }
+  },
+
+  async getCurrentUser() {
+    if (useSupabase()) {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) return null;
+      return data.user;
+    }
+    // Offline fallback mock
+    return { email: 'admin@offline.local', user_metadata: { role: 'Admin' } };
   }
 };

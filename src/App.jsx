@@ -21,13 +21,8 @@ import {
 
 export default function App() {
   // Authentication Lock state (backed by session token)
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    try {
-      return sessionStorage.getItem('ivk_session_unlocked') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Theme state
   const [theme, setTheme] = useState(() => {
@@ -64,6 +59,22 @@ export default function App() {
       console.error(e);
     }
   }, [theme]);
+
+  // Check for existing JWT session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const user = await api.getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+          setIsUnlocked(true);
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+      }
+    };
+    checkSession();
+  }, []);
 
   // Load all data from SQLite database on unlock
   useEffect(() => {
@@ -112,16 +123,18 @@ export default function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  const handleUnlock = () => {
+  const handleUnlock = (user) => {
+    setCurrentUser(user);
     setIsUnlocked(true);
   };
 
-  const handleLock = () => {
+  const handleLock = async () => {
     try {
-      sessionStorage.removeItem('ivk_session_unlocked');
+      await api.logout();
     } catch (e) {
       console.error(e);
     }
+    setCurrentUser(null);
     setIsUnlocked(false);
   };
 
@@ -571,6 +584,7 @@ export default function App() {
         theme={theme}
         toggleTheme={toggleTheme}
         company={company}
+        currentUser={currentUser}
         onNewInvoice={handleNewInvoice}
         onLock={handleLock}
       />
