@@ -38,6 +38,7 @@ export default function CompanyProfileModal({ company, onUpdateCompany }) {
     };
     // Delete temporary key so database queries don't fail
     delete updatedCompany.address;
+    delete updatedCompany.ifsc; // Clean up old field if present in local state
 
     onUpdateCompany(updatedCompany);
 
@@ -639,8 +640,8 @@ export default function CompanyProfileModal({ company, onUpdateCompany }) {
                 <input 
                   type="text" 
                   className="form-input" 
-                  value={formData.ifsc || ''} 
-                  onChange={e => setFormData({ ...formData, ifsc: e.target.value })} 
+                  value={formData.ifscCode || ''} 
+                  onChange={e => setFormData({ ...formData, ifscCode: e.target.value })} 
                 />
               </div>
               <div className="form-group">

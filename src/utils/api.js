@@ -28,10 +28,14 @@ export const api = {
   },
 
   async updateCompany(company) {
+    const cleanCompany = { ...company };
+    delete cleanCompany.ifsc; // Prevent legacy schema mismatch
+    delete cleanCompany.address; // Prevent legacy schema mismatch
+
     if (useSupabase()) {
       const supabase = getSupabaseClient();
-      const companyId = company.id || 'default';
-      const companyData = { ...company, id: companyId };
+      const companyId = cleanCompany.id || 'default';
+      const companyData = { ...cleanCompany, id: companyId };
       const { data, error } = await supabase
         .from('company')
         .upsert(companyData)
@@ -44,7 +48,7 @@ export const api = {
     const res = await fetch(`${API_BASE}/company`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(company)
+      body: JSON.stringify(cleanCompany)
     });
     if (!res.ok) throw new Error("Failed to update company profile");
     return res.json();
@@ -250,6 +254,7 @@ export const api = {
       customerGstin,
       settings,
       applyGst,
+      gstType,
       ...coreInvoice 
     } = invoice;
     
@@ -268,7 +273,8 @@ export const api = {
           customerAddress,
           customerPhone,
           customerGstin,
-          applyGst
+          applyGst,
+          gstType
         }
       }
     };

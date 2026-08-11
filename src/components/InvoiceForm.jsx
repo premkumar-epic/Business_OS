@@ -606,6 +606,7 @@ export default function InvoiceForm({
       status: invoice.status === 'Draft' ? 'Pending' : invoice.status
     };
     onSaveInvoice(finalInv);
+    setInvoice(finalInv); // Fix: Update local state to remove Draft watermark
     setSaveStatusAlert({ type: 'success', msg: '✓ Invoice successfully saved & finalized!' });
     setTimeout(() => setSaveStatusAlert(null), 3500);
   };
@@ -884,6 +885,46 @@ export default function InvoiceForm({
           </div>
         </div>
 
+        {/* Transport & Logistics Custom Fields */}
+        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
+            <Sliders size={16} /> Transport, E-Way & Logistics Fields
+          </label>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Reference DC No.</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={invoice.referenceDC || ''} 
+                onChange={e => setInvoice({ ...invoice, referenceDC: e.target.value })}
+                placeholder="e.g. 2727, 2738"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">E-Way Bill No.</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={invoice.ewayBillNo || ''} 
+                onChange={e => setInvoice({ ...invoice, ewayBillNo: e.target.value })}
+                placeholder="12 Digit E-Way Bill No."
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Vehicle / Transport No.</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={invoice.vehicleNo || ''} 
+                onChange={e => setInvoice({ ...invoice, vehicleNo: e.target.value })}
+                placeholder="e.g. KA-01-AB-1234"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Customer Select & Detail */}
         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
           <div className="customer-select-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
@@ -935,46 +976,6 @@ export default function InvoiceForm({
               onChange={e => handleCustomCustomerField('address', e.target.value)}
               placeholder="Street, Area, City, State, Pincode"
             />
-          </div>
-        </div>
-
-        {/* Transport & Logistics Custom Fields */}
-        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>
-            <Sliders size={16} /> Transport, E-Way & Logistics Fields
-          </label>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Reference DC No.</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={invoice.referenceDC || ''} 
-                onChange={e => setInvoice({ ...invoice, referenceDC: e.target.value })}
-                placeholder="e.g. 2727, 2738"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">E-Way Bill No.</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={invoice.ewayBillNo || ''} 
-                onChange={e => setInvoice({ ...invoice, ewayBillNo: e.target.value })}
-                placeholder="12 Digit E-Way Bill No."
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Vehicle / Transport No.</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={invoice.vehicleNo || ''} 
-                onChange={e => setInvoice({ ...invoice, vehicleNo: e.target.value })}
-                placeholder="e.g. KA-01-AB-1234"
-              />
-            </div>
           </div>
         </div>
 
@@ -1168,20 +1169,30 @@ export default function InvoiceForm({
                   />
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <select
+                      className="form-select"
+                      style={{ width: '130px', padding: '0.35rem 0.5rem', fontSize: '0.85rem' }}
+                      value={invoice.gstType || 'AUTO'}
+                      onChange={e => setInvoice({ ...invoice, gstType: e.target.value })}
+                    >
+                      <option value="AUTO">Auto (State)</option>
+                      <option value="CGST_SGST">CGST+SGST</option>
+                      <option value="IGST">IGST Only</option>
+                    </select>
                     <input 
                       type="number" 
                       className="form-input" 
-                      style={{ width: '100px' }}
+                      style={{ width: '80px' }}
                       value={invoice.gstRate ?? ''} 
                       onChange={e => setInvoice({ ...invoice, gstRate: Number(e.target.value) })}
-                      placeholder="GST %"
+                      placeholder="Rate %"
                       min="0"
                       max="100"
                       step="0.1"
                     />
-                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>% GST</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-main)' }}>%</span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      (Calculated: ₹{Number(invoice.gstAmount || 0).toLocaleString('en-IN')})
+                      (₹{Number(invoice.gstAmount || 0).toLocaleString('en-IN')})
                     </span>
                   </div>
                 )
