@@ -4,10 +4,16 @@ const BETA_URL = 'https://vwmutpuizshsatwlyeab.supabase.co';
 const BETA_KEY = 'sb_publishable_gO3i8RhRyBgFdUbMSY1Sog_EHjmVCDv';
 
 const getSupabaseConfig = () => {
-  // Foolproof override: If we are on the beta Vercel URL, strictly use the Beta Database.
-  // This bypasses Vercel's Supabase Integration forcibly injecting Production keys into Preview builds.
-  if (typeof window !== 'undefined' && window.location.hostname.includes('beta')) {
-    return { url: BETA_URL, key: BETA_KEY };
+  // Foolproof override: Connect to Beta Database for ALL preview deployments!
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    // If it's a Vercel preview URL or local dev (NOT the exact live production domains)
+    if (
+      (host.endsWith('.vercel.app') && host !== 'ivkgarments.vercel.app' && host !== 'ivk-garments-billing.vercel.app') ||
+      host === 'localhost' || host === '127.0.0.1'
+    ) {
+      return { url: BETA_URL, key: BETA_KEY };
+    }
   }
 
   const url = localStorage.getItem('ivk_supabase_url') || import.meta.env.VITE_SUPABASE_URL || '';
