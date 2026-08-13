@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import InvoiceForm from './components/InvoiceForm';
@@ -672,6 +673,7 @@ export default function App() {
           />
         )}
       </main>
+      <Analytics />
     </div>
   );
 }
